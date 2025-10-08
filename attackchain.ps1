@@ -40,7 +40,7 @@ function Write-Log {
     }
 }
 
-# --- Prerequisite Checks (Updated with TLS Fix) ---
+# --- Prerequisite Checks (FIXED for modern Atomic Red Team) ---
 function Check-Prerequisites {
     Write-Log "Running prerequisite checks..."
 
@@ -69,14 +69,23 @@ function Check-Prerequisites {
     }
     Import-Module Invoke-AtomicRedTeam
 
-    # 4. Check for and download the Atomics Test Library
+    # 4. Check for and download the Atomics Test Library (FIXED COMMAND)
     if (-NOT (Test-Path "C:\AtomicRedTeam\atomics")) {
         Write-Log -Level WARN "Atomic Red Team test library not found. Attempting to download..."
         try {
-            Invoke-AtomicRedTeam -GetAtomics
+            # FIXED: Use Install-AtomicRedTeam instead of Invoke-AtomicRedTeam
+            Install-AtomicRedTeam -GetAtomics -Force
         } catch {
-            Write-Log -Level ERROR "Failed to download the Atomics library. Please check your internet connection. Terminating."
-            throw "Atomics download failed."
+            Write-Log -Level ERROR "Failed to download the Atomics library. Error: $($_.Exception.Message)"
+            Write-Log -Level WARN "Attempting alternative download method..."
+            try {
+                # Alternative method
+                IEX (IWR 'https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1' -UseBasicParsing);
+                Install-AtomicRedTeam -GetAtomics -Force
+            } catch {
+                Write-Log -Level ERROR "Alternative download failed. Please check your internet connection. Terminating."
+                throw "Atomics download failed."
+            }
         }
         Write-Log -Level SUCCESS "Successfully downloaded the Atomics library."
     } else {
