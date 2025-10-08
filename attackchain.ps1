@@ -186,7 +186,8 @@ function Invoke-DefenseEvasionTactic {
     # T1562.001: Disable or Modify Tools
     Write-Log "Executing T1562.001: Disable Microsoft Defender..."
     try {
-        Invoke-SafeAtomicTest -TechniqueId "T1562.001" -TestNumbers 4
+        # Using test #17 - Tamper with Windows Defender Command Prompt
+        Invoke-SafeAtomicTest -TechniqueId "T1562.001" -TestNumbers 17
         Write-Log -Level SUCCESS "Successfully executed command to disable Defender."
     } catch {
         Write-Log -Level ERROR "Defense Evasion Tactic Failed: T1562.001 - $($_.Exception.Message)"
@@ -207,7 +208,8 @@ function Invoke-DefenseEvasionTactic {
     # T1105: Ingress Tool Transfer
     Write-Log "Executing T1105: Ingress Tool Transfer..."
     try {
-        Invoke-SafeAtomicTest -TechniqueId "T1105" -TestNumbers 1
+        # Using test #7 - certutil download (urlcache)
+        Invoke-SafeAtomicTest -TechniqueId "T1105" -TestNumbers 7
         Write-Log -Level SUCCESS "Successfully executed ingress tool transfer."
     } catch {
         Write-Log -Level ERROR "Defense Evasion Tactic Failed: T1105 - $($_.Exception.Message)"
@@ -268,7 +270,7 @@ function Invoke-DiscoveryTactic {
     Write-Log "Executing common on-host reconnaissance commands..."
     try {
         Invoke-SafeAtomicTest -TechniqueId "T1082" -TestNumbers 1
-        Invoke-SafeAtomicTest -TechniqueId "T1057" -TestNumbers 1
+        Invoke-SafeAtomicTest -TechniqueId "T1057" -TestNumbers 2
         Invoke-SafeAtomicTest -TechniqueId "T1049" -TestNumbers 1
         Write-Log -Level SUCCESS "Successfully executed basic on-host discovery."
     } catch {
@@ -294,18 +296,20 @@ function Invoke-CommandAndControlTactic {
     Write-Log "Executing T1105: Ingress Tool Transfer via PowerShell..."
     $downloadFile = Join-Path $env:TEMP "c2_payload.txt"
     try {
-        Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/redcanaryco/atomic-red-team/master/atomics/T1105/src/test.txt' -OutFile $downloadFile
+        # Using a reliable test file from Microsoft
+        Invoke-WebRequest -Uri 'https://www.bing.com/robots.txt' -OutFile $downloadFile
         if (Test-Path $downloadFile) {
             Write-Log -Level SUCCESS "Successfully executed download command."
         }
     } catch {
-        Write-Log -Level ERROR "C2 Tactic Failed: T1105 - $($_.Exception.Message)"
+        Write-Log -Level WARN "C2 download test failed (expected if network restricted): $($_.Exception.Message)"
     }
     Start-Sleep -s 2
     
     Write-Log "Executing T1197: BITS Job..."
     try {
-        Invoke-SafeAtomicTest -TechniqueId "T1197" -TestNumbers 1
+        # Using test #2 - PowerShell version (less likely to hang than cmd version)
+        Invoke-SafeAtomicTest -TechniqueId "T1197" -TestNumbers 2
         Write-Log -Level SUCCESS "Successfully created BITS job for download."
     } catch {
         Write-Log -Level ERROR "C2 Tactic Failed: T1197 - $($_.Exception.Message)"
@@ -317,8 +321,9 @@ function Invoke-ImpactTactic {
     Write-Log "--- Starting Tactic: IMPACT ---"
     Write-Log "Executing T1490: Inhibit System Recovery..."
     try {
-        Invoke-SafeAtomicTest -TechniqueId "T1490" -TestNumbers 1
-        Write-Log -Level SUCCESS "Successfully executed shadow copy deletion."
+        # Using test #9 - Disable System Restore Through Registry (no prereqs needed)
+        Invoke-SafeAtomicTest -TechniqueId "T1490" -TestNumbers 9
+        Write-Log -Level SUCCESS "Successfully executed system recovery inhibition."
     } catch {
         Write-Log -Level ERROR "Impact Tactic Failed: T1490 - $($_.Exception.Message)"
     }
@@ -341,8 +346,8 @@ try {
         $CleanupCommands.Add("Invoke-AtomicTest T1548.002 -TestNumbers 3 -Cleanup") | Out-Null
         
         Invoke-DefenseEvasionTactic
-        $CleanupCommands.Add("Invoke-AtomicTest T1562.001 -TestNumbers 4 -Cleanup") | Out-Null
-        $CleanupCommands.Add("Invoke-AtomicTest T1105 -TestNumbers 1 -Cleanup") | Out-Null
+        $CleanupCommands.Add("Invoke-AtomicTest T1562.001 -TestNumbers 17 -Cleanup") | Out-Null
+        $CleanupCommands.Add("Invoke-AtomicTest T1105 -TestNumbers 7 -Cleanup") | Out-Null
         $CleanupCommands.Add("Remove-Item (Join-Path $env:TEMP 'svchost.exe') -Force -ErrorAction SilentlyContinue") | Out-Null
         
         Invoke-CredentialAccessTactic
@@ -355,10 +360,10 @@ try {
         
         Invoke-CommandAndControlTactic
         $CleanupCommands.Add("Remove-Item (Join-Path $env:TEMP 'c2_payload.txt') -Force -ErrorAction SilentlyContinue") | Out-Null
-        $CleanupCommands.Add("Invoke-AtomicTest T1197 -TestNumbers 1 -Cleanup") | Out-Null
+        $CleanupCommands.Add("Invoke-AtomicTest T1197 -TestNumbers 2 -Cleanup") | Out-Null
         
         Invoke-ImpactTactic
-        $CleanupCommands.Add("Invoke-AtomicTest T1490 -TestNumbers 1 -Cleanup") | Out-Null
+        $CleanupCommands.Add("Invoke-AtomicTest T1490 -TestNumbers 9 -Cleanup") | Out-Null
 
         Write-Log -Level SUCCESS "Emulation chain completed successfully."
         Write-Log "Review the execution log at: $ExecutionLogFile"
