@@ -43,11 +43,15 @@ function Write-Log {
 # --- Prerequisite Checks ---
 function Check-Prerequisites {
     Write-Log "Running prerequisite checks..."
+
+    # 1. Ensure script is running as Administrator
     if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
         Write-Log -Level ERROR "This script must be run with Administrator privileges. Terminating."
         throw "Administrator privileges required."
     }
     Write-Log -Level SUCCESS "Administrator privileges confirmed."
+
+    # 2. Check for and install Invoke-AtomicRedTeam module
     if (-NOT (Get-Module -ListAvailable -Name Invoke-AtomicRedTeam)) {
         Write-Log -Level WARN "Module 'Invoke-AtomicRedTeam' not found. Attempting to install..."
         Install-Module -Name Invoke-AtomicRedTeam -Scope AllUsers -Force -AllowClobber
@@ -60,6 +64,21 @@ function Check-Prerequisites {
         Write-Log -Level SUCCESS "Module 'Invoke-AtomicRedTeam' is already installed."
     }
     Import-Module Invoke-AtomicRedTeam
+
+    # 3. Check for and download the Atomics Test Library
+    if (-NOT (Test-Path "C:\AtomicRedTeam\atomics")) {
+        Write-Log -Level WARN "Atomic Red Team test library not found. Attempting to download..."
+        try {
+            Invoke-AtomicRedTeam -GetAtomics
+        } catch {
+            Write-Log -Level ERROR "Failed to download the Atomics library. Please check your internet connection. Terminating."
+            throw "Atomics download failed."
+        }
+        Write-Log -Level SUCCESS "Successfully downloaded the Atomics library."
+    } else {
+        Write-Log -Level SUCCESS "Atomics library is already present."
+    }
+
     Write-Log -Level SUCCESS "All prerequisites are met."
     return $true
 }
