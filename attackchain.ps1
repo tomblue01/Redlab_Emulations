@@ -5,6 +5,15 @@
 .DESCRIPTION
     This script executes a series of MITRE ATT&CK techniques in a logical sequence.
     Each tactic is contained within its own function, and all actions are logged.
+    
+    The script automatically cleans up artifacts from previous runs before starting,
+    and cleans up before each individual test to prevent "already exists" errors.
+
+.NOTES
+    - The script performs automatic cleanup before starting and before each test
+    - If the script is interrupted, run the cleanup commands displayed at the end
+    - You can safely re-run the script multiple times
+    - All execution details are logged to Atomic-Execution-Log.csv
 
 .WARNING
     ********************************************************************************
@@ -110,6 +119,14 @@ function Invoke-SafeAtomicTest {
     
     if ($TestNumbers) {
         foreach ($testNum in $TestNumbers) {
+            # CLEANUP FIRST to ensure clean slate (prevent "already exists" prompts)
+            Write-Log "Running cleanup first to ensure clean environment..."
+            try {
+                Invoke-AtomicTest $TechniqueId -TestNumbers $testNum -Cleanup -ErrorAction SilentlyContinue
+            } catch {
+                # Cleanup may fail if nothing to clean - that's OK
+            }
+            
             Write-Log "Checking prerequisites for $TechniqueId test #$testNum..."
             $prereqCheck = Invoke-AtomicTest $TechniqueId -TestNumbers $testNum -CheckPrereqs 2>&1
             Write-Host $prereqCheck
@@ -128,6 +145,14 @@ function Invoke-SafeAtomicTest {
             }
         }
     } else {
+        # Cleanup first
+        Write-Log "Running cleanup first to ensure clean environment..."
+        try {
+            Invoke-AtomicTest $TechniqueId -Cleanup -ErrorAction SilentlyContinue
+        } catch {
+            # Cleanup may fail if nothing to clean - that's OK
+        }
+        
         Write-Log "Checking prerequisites for $TechniqueId..."
         Invoke-AtomicTest $TechniqueId -CheckPrereqs
         
@@ -171,7 +196,7 @@ function Invoke-PrivilegeEscalationTactic {
     Write-Log "--- Starting Tactic: PRIVILEGE ESCALATION ---"
     Write-Log "Executing T1548.002: Bypass User Account Control..."
     try {
-        # Using test #3 (Fodhelper) or #4 (Fodhelper PowerShell) - both are non-interactive
+        # Using test #3 (Fodhelper) which doesn't require user interaction
         Invoke-SafeAtomicTest -TechniqueId "T1548.002" -TestNumbers 3
         Write-Log -Level SUCCESS "Successfully executed UAC bypass."
     } catch {
@@ -336,6 +361,19 @@ try {
         Write-Log "Starting emulation chain..."
         Write-Log "Detailed execution logs will be saved to: $ExecutionLogFile"
         
+        # Clean up any artifacts from previous runs first
+        Write-Log "Performing initial cleanup of any previous test artifacts..."
+        try {
+            schtasks /delete /tn "spawn" /f 2>&1 | Out-Null
+            Remove-Item (Join-Path $env:TEMP "svchost.exe") -Force -ErrorAction SilentlyContinue
+            Remove-Item (Join-Path $env:TEMP "c2_payload.txt") -Force -ErrorAction SilentlyContinue
+            Remove-Item (Join-Path $ScriptRoot "lsass.dmp") -Force -ErrorAction SilentlyContinue
+            Remove-Item (Join-Path $ScriptRoot "network_recon.txt") -Force -ErrorAction SilentlyContinue
+            Write-Log -Level SUCCESS "Initial cleanup completed."
+        } catch {
+            Write-Log "Initial cleanup completed (some items may not have existed)."
+        }
+        
         Invoke-ExecutionTactic
         $CleanupCommands.Add("Write-Host 'Execution Tactic cleanup is manual.'") | Out-Null
         
@@ -375,7 +413,10 @@ try {
     Write-Log "Script finished."
     if ($CleanupCommands.Count -gt 0) {
         Write-Host "`n" + ("-"*60)
-        Write-Log -Level WARN "CLEANUP REQUIRED: Run the following commands to revert changes:"
+        Write-Log -Level WARN "POST-SCRIPT CLEANUP: For a thorough cleanup, run these commands:"
+        Write-Host "NOTE: The script auto-cleans before each test, but manual cleanup ensures" -ForegroundColor Cyan
+        Write-Host "      all artifacts are removed if the script was interrupted." -ForegroundColor Cyan
+        Write-Host ""
         foreach ($command in $CleanupCommands) { Write-Host $command -ForegroundColor Yellow }
         Write-Host ("-"*60)
     }
