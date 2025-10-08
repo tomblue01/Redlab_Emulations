@@ -40,18 +40,22 @@ function Write-Log {
     }
 }
 
-# --- Prerequisite Checks ---
+# --- Prerequisite Checks (Updated with TLS Fix) ---
 function Check-Prerequisites {
     Write-Log "Running prerequisite checks..."
 
-    # 1. Ensure script is running as Administrator
+    # 1. Force PowerShell to use TLS 1.2 for secure downloads
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Write-Log "Set security protocol to TLS 1.2 for this session."
+
+    # 2. Ensure script is running as Administrator
     if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
         Write-Log -Level ERROR "This script must be run with Administrator privileges. Terminating."
         throw "Administrator privileges required."
     }
     Write-Log -Level SUCCESS "Administrator privileges confirmed."
 
-    # 2. Check for and install Invoke-AtomicRedTeam module
+    # 3. Check for and install Invoke-AtomicRedTeam module
     if (-NOT (Get-Module -ListAvailable -Name Invoke-AtomicRedTeam)) {
         Write-Log -Level WARN "Module 'Invoke-AtomicRedTeam' not found. Attempting to install..."
         Install-Module -Name Invoke-AtomicRedTeam -Scope AllUsers -Force -AllowClobber
@@ -65,7 +69,7 @@ function Check-Prerequisites {
     }
     Import-Module Invoke-AtomicRedTeam
 
-    # 3. Check for and download the Atomics Test Library
+    # 4. Check for and download the Atomics Test Library
     if (-NOT (Test-Path "C:\AtomicRedTeam\atomics")) {
         Write-Log -Level WARN "Atomic Red Team test library not found. Attempting to download..."
         try {
