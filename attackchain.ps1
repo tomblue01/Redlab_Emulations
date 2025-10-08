@@ -1,4 +1,5 @@
 <#
+v1.5
 .SYNOPSIS
     A modular script to emulate adversary tactics for EDR testing.
 
