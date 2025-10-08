@@ -1,3 +1,5 @@
+# Attack Chain Emulation Script - attackchain.ps1
+
 This Script is an emulation script leverating powershell and Atomic RedTeam tools. 
 
 USE AT YOUR OWN RISK!!! 
