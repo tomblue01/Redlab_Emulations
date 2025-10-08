@@ -1,96 +1,334 @@
-PS C:\shared> .\attackchain.ps1
-[2025-10-08 07:28:29] [INFO] Running prerequisite checks...
-[2025-10-08 07:28:30] [INFO] Set security protocol to TLS 1.2 for this session.                                         [2025-10-08 07:28:30] [SUCCESS] Administrator privileges confirmed.                                                     [2025-10-08 07:28:30] [SUCCESS] Module 'Invoke-AtomicRedTeam' is already installed.                                     [2025-10-08 07:28:30] [SUCCESS] Atomics library is already present.                                                     [2025-10-08 07:28:30] [SUCCESS] All prerequisites are met.                                                              [2025-10-08 07:28:30] [INFO] Starting emulation chain...                                                                [2025-10-08 07:28:30] [INFO] Detailed execution logs will be saved to: C:\shared\Atomic-Execution-Log.csv               [2025-10-08 07:28:30] [INFO] --- Starting Tactic: EXECUTION ---                                                         [2025-10-08 07:28:30] [INFO] Executing T1059.005: CScript launching cmd.exe for recon...                                [2025-10-08 07:28:32] [SUCCESS] Successfully executed VBScript for recon.                                               [2025-10-08 07:28:32] [INFO] --- Starting Tactic: PERSISTENCE ---                                                       [2025-10-08 07:28:32] [INFO] Executing T1053.005: Scheduled Task...                                                     [2025-10-08 07:28:32] [INFO] Checking available tests for T1053.005...                                                  PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  T1053.005-1 Scheduled Task Startup Script                                                                               T1053.005-2 Scheduled task Local                                                                                        T1053.005-3 Scheduled task Remote                                                                                       T1053.005-4 Powershell Cmdlet Scheduled Task                                                                            T1053.005-5 Task Scheduler via VBA                                                                                      T1053.005-6 WMI Invoke-CimMethod Scheduled Task                                                                         T1053.005-7 Scheduled Task Executing Base64 Encoded Commands From Registry                                              T1053.005-8 Import XML Schedule Task with Hidden Attribute                                                              T1053.005-9 PowerShell Modify A Scheduled Task                                                                          T1053.005-10 Scheduled Task ("Ghost Task") via Registry Key Manipulation                                                T1053.005-11 Scheduled Task Persistence via CompMgmt.msc                                                                T1053.005-12 Scheduled Task Persistence via Eventviewer.msc                                                             [2025-10-08 07:28:38] [INFO] Checking prerequisites for T1053.005 test #2...                                            PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  CheckPrereq's for: T1053.005-2 Scheduled task Local                                                                     Prerequisites met: T1053.005-2 Scheduled task Local                                                                                                                                                                                             [2025-10-08 07:28:41] [INFO] Executing T1053.005 test #2 with timeout and execution logging...                          PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  Executing test: T1053.005-2 Scheduled task Local                                                                        SUCCESS: The scheduled task "spawn" has successfully been created.                                                      Exit code: 0                                                                                                            Done executing test: T1053.005-2 Scheduled task Local                                                                   [2025-10-08 07:28:44] [SUCCESS] Test #2 completed.                                                                      [2025-10-08 07:28:44] [SUCCESS] Successfully created scheduled task.                                                    [2025-10-08 07:28:44] [INFO] --- Starting Tactic: PRIVILEGE ESCALATION ---                                              [2025-10-08 07:28:44] [INFO] Executing T1548.002: Bypass User Account Control...                                        [2025-10-08 07:28:44] [INFO] Checking available tests for T1548.002...                                                  PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  T1548.002-1 Bypass UAC using Event Viewer (cmd)                                                                         T1548.002-2 Bypass UAC using Event Viewer (PowerShell)                                                                  T1548.002-3 Bypass UAC using Fodhelper                                                                                  T1548.002-4 Bypass UAC using Fodhelper - PowerShell                                                                     T1548.002-5 Bypass UAC using ComputerDefaults (PowerShell)                                                              T1548.002-6 Bypass UAC by Mocking Trusted Directories                                                                   T1548.002-7 Bypass UAC using sdclt DelegateExecute                                                                      T1548.002-8 Disable UAC using reg.exe                                                                                   T1548.002-9 Bypass UAC using SilentCleanup task                                                                         T1548.002-10 UACME Bypass Method 23                                                                                     T1548.002-11 UACME Bypass Method 31                                                                                     T1548.002-12 UACME Bypass Method 33                                                                                     T1548.002-13 UACME Bypass Method 34                                                                                     T1548.002-14 UACME Bypass Method 39                                                                                     T1548.002-15 UACME Bypass Method 56                                                                                     T1548.002-16 UACME Bypass Method 59                                                                                     T1548.002-17 UACME Bypass Method 61                                                                                     T1548.002-18 WinPwn - UAC Magic                                                                                         T1548.002-19 WinPwn - UAC Bypass ccmstp technique                                                                       T1548.002-20 WinPwn - UAC Bypass DiskCleanup technique                                                                  T1548.002-21 WinPwn - UAC Bypass DccwBypassUAC technique                                                                T1548.002-22 Disable UAC admin consent prompt via ConsentPromptBehaviorAdmin registry key                               T1548.002-23 UAC Bypass with WSReset Registry Modification                                                              T1548.002-24 Disable UAC - Switch to the secure desktop when prompting for elevation via registry key                   T1548.002-25 Disable UAC notification via registry keys                                                                 T1548.002-26 Disable ConsentPromptBehaviorAdmin via registry keys                                                       T1548.002-27 UAC bypassed by Utilizing ProgIDs registry.                                                                [2025-10-08 07:28:54] [INFO] Checking prerequisites for T1548.002 test #3...                                            PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  CheckPrereq's for: T1548.002-3 Bypass UAC using Fodhelper                                                               Prerequisites met: T1548.002-3 Bypass UAC using Fodhelper                                                                                                                                                                                       [2025-10-08 07:28:56] [INFO] Executing T1548.002 test #3 with timeout and execution logging...                          PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  Executing test: T1548.002-3 Bypass UAC using Fodhelper                                                                  The operation completed successfully.                                                                                   The operation completed successfully.                                                                                   Exit code: 0                                                                                                            Done executing test: T1548.002-3 Bypass UAC using Fodhelper                                                             [2025-10-08 07:29:04] [SUCCESS] Test #3 completed.                                                                      [2025-10-08 07:29:04] [SUCCESS] Successfully executed UAC bypass.                                                       [2025-10-08 07:29:04] [INFO] --- Starting Tactic: DEFENSE EVASION ---                                                   [2025-10-08 07:29:04] [INFO] Executing T1562.001: Disable Microsoft Defender...                                         [2025-10-08 07:29:04] [INFO] Checking available tests for T1562.001...                                                  PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  T1562.001-11 Unload Sysmon Filter Driver                                                                                T1562.001-12 Uninstall Sysmon                                                                                           T1562.001-13 AMSI Bypass - AMSI InitFailed                                                                              T1562.001-14 AMSI Bypass - Remove AMSI Provider Reg Key                                                                 T1562.001-15 Disable Arbitrary Security Windows Service                                                                 T1562.001-16 Tamper with Windows Defender ATP PowerShell                                                                T1562.001-17 Tamper with Windows Defender Command Prompt                                                                T1562.001-18 Tamper with Windows Defender Registry                                                                      T1562.001-19 Disable Microsoft Office Security Features                                                                 T1562.001-20 Remove Windows Defender Definition Files                                                                   T1562.001-21 Stop and Remove Arbitrary Security Windows Service                                                         T1562.001-22 Uninstall Crowdstrike Falcon on Windows                                                                    T1562.001-23 Tamper with Windows Defender Evade Scanning -Folder                                                        T1562.001-24 Tamper with Windows Defender Evade Scanning -Extension                                                     T1562.001-25 Tamper with Windows Defender Evade Scanning -Process                                                       T1562.001-26 office-365-Disable-AntiPhishRule                                                                           T1562.001-27 Disable Windows Defender with DISM                                                                         T1562.001-28 Disable Defender Using NirSoft AdvancedRun                                                                 T1562.001-29 Kill antimalware protected processes using Backstab                                                        T1562.001-30 WinPwn - Kill the event log services for stealth                                                           T1562.001-31 Tamper with Windows Defender ATP using Aliases - PowerShell                                                T1562.001-32 LockBit Black - Disable Privacy Settings Experience Using Registry -cmd                                    T1562.001-33 LockBit Black - Use Registry Editor to turn on automatic logon -cmd                                        T1562.001-34 LockBit Black - Disable Privacy Settings Experience Using Registry -Powershell                             T1562.001-35 Lockbit Black - Use Registry Editor to turn on automatic logon -Powershell                                                                                                                                                         T1562.001-36 Disable Windows Defender with PwSh Disable-WindowsOptionalFeature                                          T1562.001-37 WMIC Tamper with Windows Defender Evade Scanning Folder                                                    T1562.001-38 Delete Windows Defender Scheduled Tasks                                                                    T1562.001-44 Disable Hypervisor-Enforced Code Integrity (HVCI)                                                          T1562.001-45 AMSI Bypass - Override AMSI via COM                                                                        T1562.001-49 Tamper with Windows Defender Registry - Powershell                                                         T1562.001-51 Delete Microsoft Defender ASR Rules - InTune                                                               T1562.001-52 Delete Microsoft Defender ASR Rules - GPO                                                                  T1562.001-53 AMSI Bypass - Create AMSIEnable Reg Key                                                                    T1562.001-54 Disable EventLog-Application Auto Logger Session Via Registry - Cmd                                        T1562.001-55 Disable EventLog-Application Auto Logger Session Via Registry - PowerShell                                 T1562.001-56 Disable EventLog-Application ETW Provider Via Registry - Cmd                                               T1562.001-57 Disable EventLog-Application ETW Provider Via Registry - PowerShell                                        T1562.001-58 Freeze PPL-protected process with EDR-Freeze                                                               [2025-10-08 07:29:06] [INFO] Checking prerequisites for T1562.001 test #4...                                            PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  Found 0 atomic tests applicable to windows platform for Technique T1562.001                                                                                                                                                                     [2025-10-08 07:29:08] [INFO] Executing T1562.001 test #4 with timeout and execution logging...                          PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  Found 0 atomic tests applicable to windows platform for Technique T1562.001                                             [2025-10-08 07:29:09] [SUCCESS] Test #4 completed.                                                                      [2025-10-08 07:29:10] [SUCCESS] Successfully executed command to disable Defender.                                      [2025-10-08 07:29:12] [INFO] Executing T1027: PowerShell with encoded command...                                        [SUCCESS] Encoded command executed.                                                                                     [2025-10-08 07:29:14] [SUCCESS] Successfully executed encoded PowerShell command.                                       [2025-10-08 07:29:16] [INFO] Executing T1105: Ingress Tool Transfer...                                                  [2025-10-08 07:29:16] [INFO] Checking available tests for T1105...                                                      PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  T1105-7 certutil download (urlcache)                                                                                    T1105-8 certutil download (verifyctl)                                                                                   T1105-9 Windows - BITSAdmin BITS Download                                                                               T1105-10 Windows - PowerShell Download                                                                                  T1105-11 OSTAP Worming Activity                                                                                         T1105-12 svchost writing a file to a UNC path                                                                           T1105-13 Download a File with Windows Defender MpCmdRun.exe                                                             T1105-15 File Download via PowerShell                                                                                   T1105-16 File download with finger.exe on Windows                                                                       T1105-17 Download a file with IMEWDBLD.exe                                                                              T1105-18 Curl Download File                                                                                             T1105-19 Curl Upload File                                                                                               T1105-20 Download a file with Microsoft Connection Manager Auto-Download                                                T1105-21 MAZE Propagation Script                                                                                                                                                                                                                T1105-22 Printer Migration Command-Line Tool UNC share folder into a zip file                                           T1105-23 Lolbas replace.exe use to copy file                                                                            T1105-24 Lolbas replace.exe use to copy UNC file                                                                        T1105-25 certreq download                                                                                               T1105-26 Download a file using wscript                                                                                  T1105-29 iwr or Invoke Web-Request download                                                                             T1105-30 Arbitrary file download using the Notepad++ GUP.exe binary                                                     T1105-32 File Download with Sqlcmd.exe                                                                                  T1105-33 Remote File Copy using PSCP                                                                                    T1105-34 Windows push file using scp.exe                                                                                T1105-35 Windows pull file using scp.exe                                                                                T1105-36 Windows push file using sftp.exe                                                                               T1105-37 Windows pull file using sftp.exe                                                                               T1105-38 Download a file with OneDrive Standalone Updater                                                               [2025-10-08 07:29:25] [INFO] Checking prerequisites for T1105 test #1...                                                PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  Found 0 atomic tests applicable to windows platform for Technique T1105                                                                                                                                                                         [2025-10-08 07:29:27] [INFO] Executing T1105 test #1 with timeout and execution logging...                              PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  Found 0 atomic tests applicable to windows platform for Technique T1105                                                 [2025-10-08 07:29:28] [SUCCESS] Test #1 completed.                                                                      [2025-10-08 07:29:28] [SUCCESS] Successfully executed ingress tool transfer.                                            [2025-10-08 07:29:30] [INFO] Executing T1036.003: Masquerading...                                                       [SUCCESS] Masqueraded process executed.                                                                                 [2025-10-08 07:29:33] [SUCCESS] Successfully executed masqueraded process.                                              [2025-10-08 07:29:33] [INFO] --- Starting Tactic: CREDENTIAL ACCESS ---                                                 [2025-10-08 07:29:33] [INFO] Executing T1003.001: Dumping LSASS memory with procdump...                                 [2025-10-08 07:29:33] [INFO] Attempting LSASS dump (may be blocked by security controls)...                             [2025-10-08 07:29:35] [WARN] LSASS dump was blocked (Access Denied) - This is EXPECTED and GOOD!                        [2025-10-08 07:29:36] [SUCCESS] EDR/Security controls are working as intended.                                          [2025-10-08 07:29:36] [INFO] The attempt should have generated security alerts for your testing.                        [2025-10-08 07:29:37] [INFO] --- Starting Tactic: DISCOVERY ---                                                         [2025-10-08 07:29:37] [INFO] Executing common on-host reconnaissance commands...                                        [2025-10-08 07:29:37] [INFO] Checking available tests for T1082...                                                      PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  T1082-1 System Information Discovery                                                                                    T1082-7 Hostname Discovery (Windows)                                                                                    T1082-9 Windows MachineGUID Discovery                                                                                   T1082-10 Griffon Recon                                                                                                  T1082-11 Environment variables discovery on windows                                                                     T1082-14 WinPwn - winPEAS                                                                                               T1082-15 WinPwn - itm4nprivesc                                                                                          T1082-16 WinPwn - Powersploits privesc checks                                                                           T1082-17 WinPwn - General privesc checks                                                                                T1082-18 WinPwn - GeneralRecon                                                                                          T1082-19 WinPwn - Morerecon                                                                                             T1082-20 WinPwn - RBCD-Check                                                                                            T1082-21 WinPwn - PowerSharpPack - Watson searching for missing windows patches                                         T1082-22 WinPwn - PowerSharpPack - Sharpup checking common Privesc vectors                                              T1082-23 WinPwn - PowerSharpPack - Seatbelt                                                                             T1082-24 Azure Security Scan with SkyArk                                                                                T1082-27 System Information Discovery with WMIC                                                                         T1082-28 System Information Discovery
-T1082-29 Check computer location
-T1082-30 BIOS Information Discovery through Registry
-T1082-31 ESXi - VM Discovery using ESXCLI
-T1082-32 ESXi - Darkside system information discovery
-T1082-34 operating system discovery
-T1082-35 Check OS version via "ver" command
-T1082-36 Display volume shadow copies with "vssadmin"
-T1082-37 Identify System Locale and Regional Settings with PowerShell
-T1082-38 Enumerate Available Drives via gdr
-T1082-39 Discover OS Product Name via Registry
-T1082-40 Discover OS Build Number via Registry
-[2025-10-08 07:29:43] [INFO] Checking prerequisites for T1082 test #1...
-PathToAtomicsFolder = C:\AtomicRedTeam\atomics
+This Script is an emulation script leverating powershell and Atomic RedTeam tools. 
 
-CheckPrereq's for: T1082-1 System Information Discovery
-Prerequisites met: T1082-1 System Information Discovery
+USE AT YOUR OWN RISK!!! 
 
-[2025-10-08 07:29:45] [INFO] Executing T1082 test #1 with timeout and execution logging...
-PathToAtomicsFolder = C:\AtomicRedTeam\atomics
+This script is not meant for production systems!!
 
-Executing test: T1082-1 System Information Discovery
-Host Name:                     REDLAB-VICTIM03
-OS Name:                       Microsoft Windows 11 Enterprise
-OS Version:                    10.0.26100 N/A Build 26100
-OS Manufacturer:               Microsoft Corporation
-OS Configuration:              Member Workstation
-OS Build Type:                 Multiprocessor Free
-Registered Owner:              user
-Registered Organization:       N/A
-Product ID:                    00329-10286-23368-AA682
-Original Install Date:         1/28/2025, 4:51:47 AM
-System Boot Time:              10/8/2025, 4:04:39 AM
-System Manufacturer:           VMware, Inc.
-System Model:                  VMware20,1
-System Type:                   x64-based PC
-Processor(s):                  2 Processor(s) Installed.
-                               [01]: Intel64 Family 6 Model 143 Stepping 8 GenuineIntel ~2100 Mhz
-                               [02]: Intel64 Family 6 Model 143 Stepping 8 GenuineIntel ~2100 Mhz
-BIOS Version:                  VMware, Inc. VMW201.00V.24224532.B64.2408191502, 8/19/2024
-Windows Directory:             C:\WINDOWS
-System Directory:              C:\WINDOWS\system32
-Boot Device:                   \Device\HarddiskVolume1
-System Locale:                 en-us;English (United States)
-Input Locale:                  en-us;English (United States)
-Time Zone:                     (UTC) Coordinated Universal Time
-Available Physical Memory:     4,034 MB
-Virtual Memory: Max Size:      9,535 MB
-Total Physical Memory:         8,191 MB
-Virtual Memory: Available:     5,204 MB
-Virtual Memory: In Use:        4,331 MB
-Domain:                        RedLab01.us
-Page File Location(s):         C:\pagefile.sys
-Logon Server:                  \\AD
-Hotfix(s):                     5 Hotfix(s) Installed.
-                               [01]: KB5064401
-                               [02]: KB5048779
-                               [03]: KB5050575
-                               [04]: KB5055523                                                                                                         [05]: KB5064531                                                                          Network Card(s):               1 NIC(s) Installed.                                                                                                     [01]: vmxnet3 Ethernet Adapter                                                                                                Connection Name: Ethernet0                                                                                              DHCP Server:     10.0.1.0                                                                                               DHCP Enabled:    Yes                                                                                                    IP address(es)                                                                                                          [01]: 10.0.1.4                                                                     Virtualization-based security: Status: Running                                                                                                         Required Security Properties:                                                                                           Available Security Properties:                                                                                                Base Virtualization Support                                                                                             Secure Memory Overwrite                                                                                                 UEFI Code Readonly                                                                                                      SMM Security Mitigations 1.0                                                                                            Mode Based Execution Control                                                                                      Services Configured:                                                                                                    Services Running:                                                                                                             Credential Guard                                                                                                  App Control for Business policy: Enforced                                                                               App Control for Business user mode policy: Off                                                                          Security Features Enabled:                                                               Hyper-V Requirements:          A hypervisor has been detected. Features required for Hyper-V will not be displayed.     HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Disk\Enum                                                              0    REG_SZ    SCSI\Disk&Ven_VMware&Prod_Virtual_disk\5&220ece51&1&000000                                               Count    REG_DWORD    0x1                                                                                               NextInstance    REG_DWORD    0x1                                                                                    Exit code: 0                                                                                                            Done executing test: T1082-1 System Information Discovery                                                               [2025-10-08 07:29:56] [SUCCESS] Test #1 completed.                                                                      [2025-10-08 07:29:56] [INFO] Checking available tests for T1057...                                                      PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  T1057-2 Process Discovery - tasklist                                                                                    T1057-3 Process Discovery - Get-Process                                                                                 T1057-4 Process Discovery - get-wmiObject                                                                               T1057-5 Process Discovery - wmic process                                                                                T1057-6 Discover Specific Process - tasklist                                                                            T1057-7 Process Discovery - Process Hacker                                                                              T1057-8 Process Discovery - PC Hunter                                                                                   T1057-9 Launch Taskmgr from cmd to View running processes                                                               [2025-10-08 07:30:00] [INFO] Checking prerequisites for T1057 test #1...                                                PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  Found 0 atomic tests applicable to windows platform for Technique T1057                                                 
-[2025-10-08 07:30:00] [INFO] Executing T1057 test #1 with timeout and execution logging...
-PathToAtomicsFolder = C:\AtomicRedTeam\atomics
+USE IN A LAB ENVIRONMENT! 
 
-Found 0 atomic tests applicable to windows platform for Technique T1057
-[2025-10-08 07:30:01] [SUCCESS] Test #1 completed.
-[2025-10-08 07:30:01] [INFO] Checking available tests for T1049...
-PathToAtomicsFolder = C:\AtomicRedTeam\atomics
+The script is designed to emulate a complete attack chain and can be used to create events and logs for various security systems like enpoint security and EDR. 
 
-T1049-1 System Network Connections Discovery
-T1049-2 System Network Connections Discovery with PowerShell
-T1049-4 System Discovery using SharpView
-[2025-10-08 07:30:03] [INFO] Checking prerequisites for T1049 test #1...
-PathToAtomicsFolder = C:\AtomicRedTeam\atomics
+The Author assumes NO Responsibility for the use or misuse of this script.
 
-CheckPrereq's for: T1049-1 System Network Connections Discovery
-Prerequisites met: T1049-1 System Network Connections Discovery
-                                                                                                                        [2025-10-08 07:30:03] [INFO] Executing T1049 test #1 with timeout and execution logging...                              PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  Executing test: T1049-1 System Network Connections Discovery                                                            Active Connections                                                                                                        Proto  Local Address          Foreign Address        State                                                              TCP    10.0.1.4:51753         190:https              ESTABLISHED                                                        TCP    10.0.1.4:51758         74:https               TIME_WAIT                                                          TCP    10.0.1.4:51902         lb-140-82-113-26-iad:https  ESTABLISHED                                                   TCP    10.0.1.4:52570         190:https              CLOSE_WAIT                                                         TCP    10.0.1.4:52580         190:https              CLOSE_WAIT                                                         TCP    10.0.1.4:52583         190:https              CLOSE_WAIT                                                         TCP    10.0.1.4:52586         190:https              CLOSE_WAIT                                                         TCP    10.0.1.4:52592         190:https              CLOSE_WAIT                                                         TCP    10.0.1.4:53019         cdn-185-199-108-133:https  ESTABLISHED                                                    TCP    10.0.1.4:55233         cdn-185-199-111-133:https  CLOSE_WAIT                                                     TCP    10.0.1.4:55234         lb-140-82-114-3-iad:https  CLOSE_WAIT                                                     TCP    10.0.1.4:55235         lb-140-82-113-9-iad:https  CLOSE_WAIT                                                     TCP    10.0.1.4:56006         cdn-185-199-109-133:https  ESTABLISHED                                                    TCP    10.0.1.4:56010         190:https              ESTABLISHED                                                        TCP    10.0.1.4:56013         74:https               ESTABLISHED                                                        TCP    10.0.1.4:57810         lb-140-82-112-22-iad:https  ESTABLISHED                                                   TCP    10.0.1.4:58137         cdn-185-199-109-154:https  ESTABLISHED                                                    TCP    10.0.1.4:63338         cdn-185-199-109-154:https  ESTABLISHED                                                  New connections will be remembered.                                                                                     There are no entries in the list.                                                                                       There are no entries in the list.                                                                                       Exit code: 0                                                                                                            Done executing test: T1049-1 System Network Connections Discovery                                                       [2025-10-08 07:30:07] [SUCCESS] Test #1 completed.                                                                      [2025-10-08 07:30:07] [SUCCESS] Successfully executed basic on-host discovery.                                          [2025-10-08 07:30:09] [INFO] Executing T1018: Remote System Discovery...                                                [2025-10-08 07:30:11] [SUCCESS] Successfully performed network scan and saved results.                                  [2025-10-08 07:30:12] [INFO] --- Starting Tactic: COMMAND AND CONTROL ---                                               [2025-10-08 07:30:12] [INFO] Executing T1105: Ingress Tool Transfer via PowerShell...                                   [2025-10-08 07:30:12] [ERROR] C2 Tactic Failed: T1105 - The remote server returned an error: (404) Not Found.           [2025-10-08 07:30:15] [INFO] Executing T1197: BITS Job...                                                               [2025-10-08 07:30:15] [INFO] Checking available tests for T1197...                                                      PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  T1197-1 Bitsadmin Download (cmd)                                                                                        T1197-2 Bitsadmin Download (PowerShell)                                                                                 T1197-3 Persist, Download, & Execute                                                                                    T1197-4 Bits download using desktopimgdownldr.exe (cmd)                                                                 [2025-10-08 07:30:17] [INFO] Checking prerequisites for T1197 test #1...                                                PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  CheckPrereq's for: T1197-1 Bitsadmin Download (cmd)                                                                     Prerequisites met: T1197-1 Bitsadmin Download (cmd)                                                                                                                                                                                             [2025-10-08 07:30:18] [INFO] Executing T1197 test #1 with timeout and execution logging...                              PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  Executing test: T1197-1 Bitsadmin Download (cmd)                                                                        Process Timed out after 180 seconds, use '-TimeoutSeconds' to specify a different timeout                               BITSADMIN version 3.0                                                                                                   BITS administration utility.                                                                                            (C) Copyright Microsoft Corp.                                                                                           Unable to read console input - 0x800700e9                                                                               No process is on the other end of the pipe.                                                                             Transfer complete.                                                                                                      Exit code: -2147024663                                                                                                  Done executing test: T1197-1 Bitsadmin Download (cmd)                                                                   [2025-10-08 07:33:21] [SUCCESS] Test #1 completed.                                                                      [2025-10-08 07:33:21] [SUCCESS] Successfully created BITS job for download.                                             [2025-10-08 07:33:21] [INFO] --- Starting Tactic: IMPACT ---                                                            [2025-10-08 07:33:21] [INFO] Executing T1490: Inhibit System Recovery...                                                [2025-10-08 07:33:22] [INFO] Checking available tests for T1490...                                                      PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  T1490-1 Windows - Delete Volume Shadow Copies                                                                           T1490-2 Windows - Delete Volume Shadow Copies via WMI                                                                   T1490-3 Windows - wbadmin Delete Windows Backup Catalog                                                                 T1490-4 Windows - Disable Windows Recovery Console Repair                                                               T1490-5 Windows - Delete Volume Shadow Copies via WMI with PowerShell                                                   T1490-6 Windows - Delete Backup Files                                                                                   T1490-7 Windows - wbadmin Delete systemstatebackup                                                                      T1490-8 Windows - Disable the SR scheduled task                                                                         T1490-9 Disable System Restore Through Registry                                                                         T1490-10 Windows - vssadmin Resize Shadowstorage Volume                                                                 T1490-11 Modify VSS Service Permissions                                                                                 [2025-10-08 07:33:25] [INFO] Checking prerequisites for T1490 test #1...                                                PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  CheckPrereq's for: T1490-1 Windows - Delete Volume Shadow Copies                                                        Prerequisites not met: T1490-1 Windows - Delete Volume Shadow Copies                                                            [*] Create volume shadow copy of C:\ . This prereq command only works on Windows Server or Windows 8.                                                                                                                                   Try installing prereq's with the -GetPrereqs switch                                                                                                                                                                                             [2025-10-08 07:33:30] [INFO] Executing T1490 test #1 with timeout and execution logging...                              PathToAtomicsFolder = C:\AtomicRedTeam\atomics                                                                                                                                                                                                  Executing test: T1490-1 Windows - Delete Volume Shadow Copies                                                           vssadmin 1.1 - Volume Shadow Copy Service administrative command-line tool                                              (C) Copyright 2001-2013 Microsoft Corp.                                                                                 No items found that satisfy the query.                                                                                  Exit code: 1                                                                                                            Done executing test: T1490-1 Windows - Delete Volume Shadow Copies                                                      [2025-10-08 07:33:35] [SUCCESS] Test #1 completed.                                                                      [2025-10-08 07:33:35] [SUCCESS] Successfully executed shadow copy deletion.                                             [2025-10-08 07:33:36] [SUCCESS] Emulation chain completed successfully.
-[2025-10-08 07:33:36] [INFO] Review the execution log at: C:\shared\Atomic-Execution-Log.csv
-[2025-10-08 07:33:37] [INFO] Script finished.
+# EDR Attack Simulation Script
 
- + ------------------------------------------------------------
-[2025-10-08 07:33:38] [WARN] CLEANUP REQUIRED: Run the following commands to revert changes:
-Write-Host 'Execution Tactic cleanup is manual.'
+A comprehensive PowerShell script for testing Endpoint Detection and Response (EDR) solutions using MITRE ATT&CK techniques via the Atomic Red Team framework.
+
+## ⚠️ WARNING - AUTHORIZED USE ONLY
+
+```
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                                                                           ║
+║  ⚠️  THIS SCRIPT EXECUTES REAL ATTACK TECHNIQUES  ⚠️                     ║
+║                                                                           ║
+║  ❌ DO NOT RUN ON PRODUCTION SYSTEMS                                     ║
+║  ❌ DO NOT RUN WITHOUT EXPLICIT AUTHORIZATION                            ║
+║  ❌ DO NOT RUN ON NETWORKS YOU DON'T OWN                                 ║
+║                                                                           ║
+║  ✅ FOR AUTHORIZED SECURITY TESTING ONLY                                 ║
+║  ✅ USE ONLY IN ISOLATED LAB ENVIRONMENTS                                ║
+║  ✅ OBTAIN WRITTEN PERMISSION BEFORE USE                                 ║
+║                                                                           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+```
+
+**UNAUTHORIZED USE OF THIS SCRIPT MAY:**
+- Violate computer fraud and abuse laws
+- Trigger security incidents and investigations
+- Cause system instability or data loss
+- Result in civil and criminal penalties
+- Lead to termination of employment
+
+**YOU ARE RESPONSIBLE** for ensuring you have proper authorization before running this script.
+
+## 🎯 Overview
+
+This script automates the execution of adversary tactics and techniques to test EDR detection capabilities. It chains together multiple MITRE ATT&CK techniques across the attack lifecycle, from initial execution to impact, simulating realistic adversary behavior.
+
+### What This Script Does
+
+The script executes a sequential chain of attack techniques organized by MITRE ATT&CK tactics:
+
+1. **Execution** - VBScript execution for reconnaissance
+2. **Persistence** - Scheduled task creation
+3. **Privilege Escalation** - UAC bypass attempts
+4. **Defense Evasion** - Defender tampering, encoded commands, file masquerading
+5. **Credential Access** - LSASS memory dumping attempts
+6. **Discovery** - System and network reconnaissance
+7. **Command & Control** - File downloads and BITS jobs
+8. **Impact** - System recovery inhibition
+
+### Key Features
+
+✅ **Automatic Cleanup** - Removes artifacts from previous runs before starting  
+✅ **Idempotent Design** - Can be safely run multiple times  
+✅ **Detailed Logging** - Creates comprehensive execution logs (CSV and text)  
+✅ **Non-Interactive** - Runs without user prompts or hangs  
+✅ **EDR-Focused** - Tests detection capabilities, not exploitation  
+✅ **MITRE ATT&CK Aligned** - Uses techniques from the MITRE ATT&CK framework
+
+## 🔧 Requirements
+
+### System Requirements
+- **Operating System**: Windows 10/11 or Windows Server 2016+
+- **PowerShell**: Version 5.1 or higher
+- **Privileges**: **Administrator rights required**
+- **Internet Connection**: Required for initial Atomic Red Team download
+- **Disk Space**: ~500MB for Atomic Red Team library
+
+### Software Dependencies
+- PowerShell Execution Policy must allow script execution
+- .NET Framework 4.5 or higher
+- Windows Management Framework 5.1+
+
+**Note**: The script will automatically install the Invoke-AtomicRedTeam module if not present.
+
+## 📋 Installation
+
+### 1. Clone the Repository
+
+```powershell
+git clone https://github.com/yourusername/edr-attack-simulation.git
+cd edr-attack-simulation
+```
+
+### 2. Set Execution Policy (if needed)
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+### 3. Verify Administrator Privileges
+
+Right-click PowerShell and select **"Run as Administrator"**
+
+## 🚀 Usage
+
+### Basic Execution
+
+```powershell
+# Navigate to script directory
+cd C:\path\to\script
+
+# Run the script
+.\attackchain.ps1
+```
+
+### What to Expect
+
+The script will:
+1. Check prerequisites and install required modules
+2. Download Atomic Red Team library (first run only)
+3. Clean up artifacts from previous runs
+4. Execute each tactic sequentially with detailed output
+5. Generate execution logs in the script directory
+
+### Expected Runtime
+
+- **First run**: 10-15 minutes (includes downloads)
+- **Subsequent runs**: 5-8 minutes
+
+## 📊 MITRE ATT&CK Techniques Tested
+
+| Tactic | Technique ID | Technique Name | Test Description |
+|--------|--------------|----------------|------------------|
+| Execution | T1059.005 | VBScript | CScript execution for recon |
+| Persistence | T1053.005 | Scheduled Task | Local scheduled task creation |
+| Privilege Escalation | T1548.002 | Bypass UAC | Fodhelper UAC bypass |
+| Defense Evasion | T1562.001 | Impair Defenses | Windows Defender tampering |
+| Defense Evasion | T1027 | Obfuscated Files | Base64 encoded commands |
+| Defense Evasion | T1105 | Ingress Tool Transfer | File download via certutil |
+| Defense Evasion | T1036.003 | Masquerading | Process masquerading |
+| Credential Access | T1003.001 | LSASS Memory | ProcDump LSASS dumping |
+| Discovery | T1082 | System Information | System enumeration |
+| Discovery | T1057 | Process Discovery | Process enumeration |
+| Discovery | T1049 | Network Connections | Network connection enumeration |
+| Discovery | T1018 | Remote System Discovery | ARP table enumeration |
+| Command & Control | T1105 | Ingress Tool Transfer | File download simulation |
+| Command & Control | T1197 | BITS Jobs | BITS download |
+| Impact | T1490 | Inhibit System Recovery | Disable system restore |
+
+## 📝 Output Files
+
+The script generates several log files in the script directory:
+
+- **Attack-Simulation-Log.txt** - Detailed text log with timestamps
+- **Atomic-Execution-Log.csv** - CSV log for analysis and reporting
+- **network_recon.txt** - ARP table output
+- **lsass.dmp** - LSASS dump (if successful - should be blocked by EDR)
+
+## 🧹 Cleanup
+
+### Automatic Cleanup
+
+The script automatically cleans up before each test run. If you need to perform manual cleanup:
+
+```powershell
+# Remove scheduled task
+schtasks /delete /tn "spawn" /f
+
+# Remove masqueraded files
+Remove-Item $env:TEMP\svchost.exe -Force -ErrorAction SilentlyContinue
+
+# Remove downloaded payloads
+Remove-Item $env:TEMP\c2_payload.txt -Force -ErrorAction SilentlyContinue
+
+# Remove LSASS dump (if created)
+Remove-Item .\lsass.dmp -Force -ErrorAction SilentlyContinue
+
+# Run Atomic cleanup commands (displayed at end of script)
 Invoke-AtomicTest T1053.005 -TestNumbers 2 -Cleanup
 Invoke-AtomicTest T1548.002 -TestNumbers 3 -Cleanup
-Invoke-AtomicTest T1562.001 -TestNumbers 4 -Cleanup
-Invoke-AtomicTest T1105 -TestNumbers 1 -Cleanup
-Remove-Item (Join-Path C:\Users\ADMINI~1\AppData\Local\Temp 'svchost.exe') -Force -ErrorAction SilentlyContinue
-Remove-Item (Join-Path C:\Users\ADMINI~1\AppData\Local\Temp 'SysinternalsSuite.zip') -Force -ErrorAction SilentlyContinue
-Remove-Item (Join-Path C:\Users\ADMINI~1\AppData\Local\Temp 'SysinternalsSuite') -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item (Join-Path C:\shared 'lsass.dmp') -Force -ErrorAction SilentlyContinue
-Remove-Item (Join-Path C:\shared 'network_recon.txt') -Force -ErrorAction SilentlyContinue
-Remove-Item (Join-Path C:\Users\ADMINI~1\AppData\Local\Temp 'c2_payload.txt') -Force -ErrorAction SilentlyContinue
-Invoke-AtomicTest T1197 -TestNumbers 1 -Cleanup
-Invoke-AtomicTest T1490 -TestNumbers 1 -Cleanup
+Invoke-AtomicTest T1562.001 -TestNumbers 17 -Cleanup
+# ... (see full list in script output)
+```
+
+## 🛡️ Expected EDR Behavior
+
+### What Should Trigger Alerts
+
+Your EDR solution should detect and alert on:
+
+✅ **Scheduled task creation** for persistence  
+✅ **UAC bypass attempts** using fodhelper  
+✅ **Defender tampering attempts** (will be blocked)  
+✅ **Process masquerading** (legitimate binary copied to suspicious name)  
+✅ **LSASS access attempts** (should be blocked)  
+✅ **Suspicious command-line activity**  
+✅ **Encoded PowerShell commands**  
+✅ **certutil used for file downloads**  
+✅ **System recovery inhibition attempts**
+
+### Expected Blocks/Failures
+
+Some techniques should **FAIL** - this indicates security controls are working:
+
+❌ **T1562.001** - Defender tampering (Access Denied - GOOD!)  
+❌ **T1003.001** - LSASS dumping (Access Denied - GOOD!)
+
+These failures are **SUCCESS indicators** for your security posture.
+
+## 🔍 Analyzing Results
+
+### Check Your EDR Console
+
+After running the script, review your EDR console for:
+
+1. **Detection Coverage** - Which techniques were detected?
+2. **Alert Quality** - Are alerts clear and actionable?
+3. **Response Actions** - Did the EDR block malicious actions?
+4. **False Positives** - Any legitimate activity flagged?
+5. **Blind Spots** - Which techniques went undetected?
+
+### Review Log Files
+
+```powershell
+# View text log
+Get-Content .\Attack-Simulation-Log.txt
+
+# Analyze CSV log
+Import-Csv .\Atomic-Execution-Log.csv | Format-Table
+
+# Check for failed tests
+Get-Content .\Attack-Simulation-Log.txt | Select-String "ERROR"
+```
+
+## ⚙️ Troubleshooting
+
+### Script Requires Administrator Rights
+
+**Error**: "This script must be run with Administrator privileges"
+
+**Solution**: Right-click PowerShell and select "Run as Administrator"
+
+### Execution Policy Restrictions
+
+**Error**: "Cannot be loaded because running scripts is disabled"
+
+**Solution**:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+### Module Installation Fails
+
+**Error**: "Failed to install 'Invoke-AtomicRedTeam' module"
+
+**Solution**:
+```powershell
+# Manually install module
+Install-Module -Name Invoke-AtomicRedTeam -Scope CurrentUser -Force
+```
+
+### Tests Timeout or Hang
+
+The script includes automatic cleanup to prevent hanging on prompts. If tests still timeout:
+
+1. Ensure all previous artifacts are cleaned up
+2. Check for antivirus blocking test execution
+3. Review the execution log for specific errors
+
+### Network Download Failures
+
+If atomic downloads fail, ensure:
+- Internet connection is active
+- Firewall allows PowerShell to access GitHub
+- Proxy settings are configured (if applicable)
+
+## 🤝 Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Test thoroughly in a lab environment
+4. Submit a pull request with clear description
+
+## 📚 Additional Resources
+
+- [MITRE ATT&CK Framework](https://attack.mitre.org/)
+- [Atomic Red Team](https://github.com/redcanaryco/atomic-red-team)
+- [Invoke-AtomicRedTeam Documentation](https://github.com/redcanaryco/invoke-atomicredteam)
+- [Purple Team Exercise Framework](https://www.scythe.io/library/purple-teaming-framework)
+
+## ⚖️ Legal Disclaimer
+
+This script is provided for **EDUCATIONAL and AUTHORIZED SECURITY TESTING purposes ONLY**.
+
+**By using this script, you acknowledge that:**
+
+- You have explicit written authorization to test the target system
+- You understand the script executes real attack techniques
+- You will use this script only in controlled lab environments
+- You are responsible for any damage or legal consequences
+- The authors assume no liability for misuse or unauthorized use
+- You will comply with all applicable laws and regulations
+
+**Misuse of this script may violate:**
+- Computer Fraud and Abuse Act (CFAA) - 18 U.S.C. § 1030
+- Stored Communications Act - 18 U.S.C. § 2701
+- State and local computer crime laws
+- Organization security policies
+- Employment agreements
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👤 Authors
+
+- **Your Name** - Initial work
+
+## 🙏 Acknowledgments
+
+- [Red Canary](https://redcanary.com/) - Atomic Red Team framework
+- [MITRE Corporation](https://www.mitre.org/) - ATT&CK framework
+- Security community contributors
+
+---
+
+**Remember**: Always test responsibly. With great power comes great responsibility. 🦸‍♂️
+
+**Questions or Issues?** Open an issue in this repository or contact the security team.
+
+**Last Updated**: October 2025
