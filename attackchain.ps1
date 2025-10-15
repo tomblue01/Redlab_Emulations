@@ -79,7 +79,8 @@ function Test-NetworkConnectivity {
         Write-Log -Level SUCCESS "Network connectivity confirmed."
         return $true
     } catch {
-        Write-Log -Level ERROR "Network connectivity test failed: $($_.Exception.Message)"
+        $errorMsg = $_.Exception.Message
+        Write-Log -Level ERROR "Network connectivity test failed: $errorMsg"
         return $false
     }
 }
@@ -118,7 +119,8 @@ function Test-AvailableDiskSpace {
         }
         return $true
     } catch {
-        Write-Log -Level WARN "Could not verify disk space: $($_.Exception.Message)"
+        $errorMsg = $_.Exception.Message
+        Write-Log -Level WARN "Could not verify disk space: $errorMsg"
         return $true  # Continue anyway
     }
 }
@@ -150,7 +152,8 @@ function Test-AtomicTestExists {
         
         return $true
     } catch {
-        Write-Log -Level WARN "Could not verify test existence for $TechniqueId: $($_.Exception.Message)"
+        $errorMsg = $_.Exception.Message
+        Write-Log -Level WARN "Could not verify test existence for $TechniqueId : $errorMsg"
         return $false
     }
 }
@@ -171,7 +174,8 @@ function Invoke-WithRetry {
             Write-Log -Level SUCCESS "$OperationName succeeded."
             return $result
         } catch {
-            Write-Log -Level WARN "$OperationName failed on attempt $attempt : $($_.Exception.Message)"
+            $errorMsg = $_.Exception.Message
+            Write-Log -Level WARN "$OperationName failed on attempt $attempt : $errorMsg"
             if ($attempt -lt $MaxRetries) {
                 Write-Log "Waiting $DelaySeconds seconds before retry..."
                 Start-Sleep -Seconds $DelaySeconds
@@ -216,7 +220,8 @@ function Check-Prerequisites {
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         Write-Log -Level SUCCESS "Set security protocol to TLS 1.2 for this session."
     } catch {
-        Write-Log -Level WARN "Could not set TLS 1.2: $($_.Exception.Message)"
+        $errorMsg = $_.Exception.Message
+        Write-Log -Level WARN "Could not set TLS 1.2: $errorMsg"
     }
 
     # 4. Ensure script is running as Administrator
@@ -268,7 +273,8 @@ function Check-Prerequisites {
             
             Write-Log -Level SUCCESS "Successfully installed Invoke-AtomicRedTeam from GitHub."
         } catch {
-            Write-Log -Level ERROR "Failed to install from GitHub: $($_.Exception.Message)"
+            $errorMsg = $_.Exception.Message
+            Write-Log -Level ERROR "Failed to install from GitHub: $errorMsg"
             Write-Log -Level ERROR "Please manually install using: IEX (IWR 'https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1' -UseBasicParsing); Install-AtomicRedTeam"
             throw "GitHub installation failed"
         }
@@ -282,18 +288,24 @@ function Check-Prerequisites {
         Import-Module $modulePsdPath -Force -Global -ErrorAction Stop
         Write-Log -Level SUCCESS "Successfully imported Invoke-AtomicRedTeam module."
     } catch {
-        Write-Log -Level ERROR "Failed to import module: $($_.Exception.Message)"
+        $errorMsg = $_.Exception.Message
+        Write-Log -Level ERROR "Failed to import module: $errorMsg"
         throw "Module import failed"
     }
     
     # 9. Verify the module commands are available
     Write-Log "Verifying module commands..."
-    $command = Get-Command Install-AtomicRedTeam -ErrorAction SilentlyContinue
+    
+    # Check for the main command that we'll actually use
+    $command = Get-Command Invoke-AtomicTest -ErrorAction SilentlyContinue
     if (-NOT $command) {
-        Write-Log -Level ERROR "Failed to load 'Invoke-AtomicRedTeam' module commands. Terminating."
+        Write-Log -Level ERROR "Failed to load 'Invoke-AtomicRedTeam' module commands."
+        Write-Log "Available commands in module:"
+        Get-Command -Module Invoke-AtomicRedTeam | ForEach-Object { Write-Log "  - $($_.Name)" }
         throw "Module commands not available after import."
     }
     Write-Log -Level SUCCESS "'Invoke-AtomicRedTeam' module loaded successfully."
+    Write-Log "Primary command 'Invoke-AtomicTest' is available."
 
     # 10. Check for and download the Atomics Test Library
     if (-NOT (Test-Path "C:\AtomicRedTeam\atomics")) {
@@ -310,7 +322,8 @@ function Check-Prerequisites {
             
             Write-Log -Level SUCCESS "Successfully downloaded the Atomics library."
         } catch {
-            Write-Log -Level ERROR "Failed to download the Atomics library: $($_.Exception.Message)"
+            $errorMsg = $_.Exception.Message
+            Write-Log -Level ERROR "Failed to download the Atomics library: $errorMsg"
             Write-Log -Level ERROR "Please check your internet connection and try again."
             throw "Atomics download failed"
         }
@@ -368,7 +381,8 @@ function Invoke-SafeAtomicTest {
                         Start-Sleep -Seconds 2
                     }
                 } catch {
-                    Write-Log -Level WARN "Prerequisite check/installation failed: $($_.Exception.Message)"
+                    $errorMsg = $_.Exception.Message
+                    Write-Log -Level WARN "Prerequisite check/installation failed: $errorMsg"
                 }
                 
                 # Execute the test
@@ -377,7 +391,8 @@ function Invoke-SafeAtomicTest {
                     Invoke-AtomicTest $TechniqueId -TestNumbers $testNum -TimeoutSeconds 180 -ExecutionLogPath $ExecutionLogFile -Confirm:$false -ErrorAction Stop
                     Write-Log -Level SUCCESS "Test #$testNum completed successfully."
                 } catch {
-                    Write-Log -Level ERROR "Test #$testNum failed: $($_.Exception.Message)"
+                    $errorMsg = $_.Exception.Message
+                    Write-Log -Level ERROR "Test #$testNum failed: $errorMsg"
                     Write-Log "This may be expected behavior if security controls blocked the test."
                 }
                 
@@ -397,7 +412,8 @@ function Invoke-SafeAtomicTest {
             try {
                 Invoke-AtomicTest $TechniqueId -CheckPrereqs -ErrorAction SilentlyContinue
             } catch {
-                Write-Log -Level WARN "Prerequisite check failed: $($_.Exception.Message)"
+                $errorMsg = $_.Exception.Message
+                Write-Log -Level WARN "Prerequisite check failed: $errorMsg"
             }
             
             Write-Log "Executing $TechniqueId (all available tests)..."
@@ -405,11 +421,13 @@ function Invoke-SafeAtomicTest {
                 Invoke-AtomicTest $TechniqueId -TimeoutSeconds 180 -ExecutionLogPath $ExecutionLogFile -Confirm:$false -ErrorAction Stop
                 Write-Log -Level SUCCESS "$TechniqueId completed successfully."
             } catch {
-                Write-Log -Level ERROR "$TechniqueId failed: $($_.Exception.Message)"
+                $errorMsg = $_.Exception.Message
+                Write-Log -Level ERROR "$TechniqueId failed: $errorMsg"
             }
         }
     } catch {
-        Write-Log -Level ERROR "Fatal error in Invoke-SafeAtomicTest for $TechniqueId : $($_.Exception.Message)"
+        $errorMsg = $_.Exception.Message
+        Write-Log -Level ERROR "Fatal error in Invoke-SafeAtomicTest for $TechniqueId : $errorMsg"
     }
 }
 
@@ -424,7 +442,8 @@ function Invoke-ExecutionTactic {
         $result = cscript.exe $vbsPath //Nologo 2>&1
         Write-Log -Level SUCCESS "Successfully executed VBScript for recon."
     } catch {
-        Write-Log -Level ERROR "Execution Tactic Failed: T1059.005 - $($_.Exception.Message)"
+        $errorMsg = $_.Exception.Message
+        Write-Log -Level ERROR "Execution Tactic Failed: T1059.005 - $errorMsg"
     } finally {
         if (Test-Path $vbsPath) { 
             Remove-Item $vbsPath -Force -ErrorAction SilentlyContinue
@@ -440,7 +459,8 @@ function Invoke-PersistenceTactic {
         Invoke-SafeAtomicTest -TechniqueId "T1053.005" -TestNumbers 2
         Write-Log -Level SUCCESS "Persistence tactic completed."
     } catch {
-        Write-Log -Level ERROR "Persistence Tactic Failed: T1053.005 - $($_.Exception.Message)"
+        $errorMsg = $_.Exception.Message
+        Write-Log -Level ERROR "Persistence Tactic Failed: T1053.005 - $errorMsg"
     }
 }
 
@@ -458,7 +478,8 @@ function Invoke-PrivilegeEscalationTactic {
         Invoke-SafeAtomicTest -TechniqueId "T1548.002" -TestNumbers 3
         Write-Log -Level SUCCESS "Privilege escalation tactic completed."
     } catch {
-        Write-Log -Level ERROR "Privilege Escalation Tactic Failed: T1548.002 - $($_.Exception.Message)"
+        $errorMsg = $_.Exception.Message
+        Write-Log -Level ERROR "Privilege Escalation Tactic Failed: T1548.002 - $errorMsg"
     }
 }
 
@@ -478,7 +499,8 @@ function Invoke-DefenseEvasionTactic {
         Invoke-SafeAtomicTest -TechniqueId "T1562.001" -TestNumbers 17
         Write-Log -Level SUCCESS "T1562.001 execution attempted."
     } catch {
-        Write-Log -Level ERROR "Defense Evasion Tactic Failed: T1562.001 - $($_.Exception.Message)"
+        $errorMsg = $_.Exception.Message
+        Write-Log -Level ERROR "Defense Evasion Tactic Failed: T1562.001 - $errorMsg"
     }
     Start-Sleep -Seconds 2
     
@@ -489,7 +511,8 @@ function Invoke-DefenseEvasionTactic {
         $result = powershell.exe -EncodedCommand $encodedCommand 2>&1
         Write-Log -Level SUCCESS "Successfully executed encoded PowerShell command."
     } catch {
-        Write-Log -Level ERROR "Defense Evasion Tactic Failed: T1027 - $($_.Exception.Message)"
+        $errorMsg = $_.Exception.Message
+        Write-Log -Level ERROR "Defense Evasion Tactic Failed: T1027 - $errorMsg"
     }
     Start-Sleep -Seconds 2
     
@@ -499,7 +522,8 @@ function Invoke-DefenseEvasionTactic {
         Invoke-SafeAtomicTest -TechniqueId "T1105" -TestNumbers 7
         Write-Log -Level SUCCESS "T1105 execution completed."
     } catch {
-        Write-Log -Level ERROR "Defense Evasion Tactic Failed: T1105 - $($_.Exception.Message)"
+        $errorMsg = $_.Exception.Message
+        Write-Log -Level ERROR "Defense Evasion Tactic Failed: T1105 - $errorMsg"
     }
     Start-Sleep -Seconds 2
     
@@ -516,7 +540,8 @@ function Invoke-DefenseEvasionTactic {
             Write-Log -Level ERROR "PowerShell executable not found at: $pshellPath"
         }
     } catch {
-        Write-Log -Level ERROR "Defense Evasion Tactic Failed: T1036.003 - $($_.Exception.Message)"
+        $errorMsg = $_.Exception.Message
+        Write-Log -Level ERROR "Defense Evasion Tactic Failed: T1036.003 - $errorMsg"
     } finally {
         if (Test-Path $masqueradePath) {
             Remove-Item $masqueradePath -Force -ErrorAction SilentlyContinue
@@ -569,7 +594,8 @@ function Invoke-CredentialAccessTactic {
             Write-Log "The attempt should have generated security alerts for your testing."
         }
     } catch {
-        Write-Log -Level WARN "Credential Access attempt blocked: $($_.Exception.Message)"
+        $errorMsg = $_.Exception.Message
+        Write-Log -Level WARN "Credential Access attempt blocked: $errorMsg"
         Write-Log -Level SUCCESS "This is expected behavior - EDR should block LSASS access."
     }
 }
@@ -584,7 +610,8 @@ function Invoke-DiscoveryTactic {
         Invoke-SafeAtomicTest -TechniqueId "T1049" -TestNumbers 1
         Write-Log -Level SUCCESS "Successfully executed basic on-host discovery."
     } catch {
-        Write-Log -Level ERROR "Discovery Tactic Failed: Basic Recon - $($_.Exception.Message)"
+        $errorMsg = $_.Exception.Message
+        Write-Log -Level ERROR "Discovery Tactic Failed: Basic Recon - $errorMsg"
     }
     Start-Sleep -Seconds 2
     
@@ -597,7 +624,8 @@ function Invoke-DiscoveryTactic {
             Write-Log -Level SUCCESS "Successfully performed network scan and saved results."
         }
     } catch {
-        Write-Log -Level ERROR "Discovery Tactic Failed: T1018 - $($_.Exception.Message)"
+        $errorMsg = $_.Exception.Message
+        Write-Log -Level ERROR "Discovery Tactic Failed: T1018 - $errorMsg"
     }
 }
 
@@ -616,7 +644,8 @@ function Invoke-CommandAndControlTactic {
             Write-Log -Level SUCCESS "Successfully executed download command."
         }
     } catch {
-        Write-Log -Level WARN "C2 download test failed (expected if network restricted): $($_.Exception.Message)"
+        $errorMsg = $_.Exception.Message
+        Write-Log -Level WARN "C2 download test failed (expected if network restricted): $errorMsg"
     }
     Start-Sleep -Seconds 2
     
@@ -625,7 +654,8 @@ function Invoke-CommandAndControlTactic {
         Invoke-SafeAtomicTest -TechniqueId "T1197" -TestNumbers 2
         Write-Log -Level SUCCESS "BITS job test completed."
     } catch {
-        Write-Log -Level ERROR "C2 Tactic Failed: T1197 - $($_.Exception.Message)"
+        $errorMsg = $_.Exception.Message
+        Write-Log -Level ERROR "C2 Tactic Failed: T1197 - $errorMsg"
     }
 }
 
@@ -637,7 +667,8 @@ function Invoke-ImpactTactic {
         Invoke-SafeAtomicTest -TechniqueId "T1490" -TestNumbers 9
         Write-Log -Level SUCCESS "Impact tactic completed."
     } catch {
-        Write-Log -Level ERROR "Impact Tactic Failed: T1490 - $($_.Exception.Message)"
+        $errorMsg = $_.Exception.Message
+        Write-Log -Level ERROR "Impact Tactic Failed: T1490 - $errorMsg"
     }
 }
 
@@ -668,33 +699,33 @@ try {
         }
         
         # Execute tactics with error handling for each
-        try { Invoke-ExecutionTactic } catch { Write-Log -Level ERROR "Execution tactic failed: $($_.Exception.Message)" }
+        try { Invoke-ExecutionTactic } catch { $errorMsg = $_.Exception.Message; Write-Log -Level ERROR "Execution tactic failed: $errorMsg" }
         $CleanupCommands.Add("Remove-Item (Join-Path '$ScriptRoot' 'temp-recon.vbs') -Force -ErrorAction SilentlyContinue") | Out-Null
         
-        try { Invoke-PersistenceTactic } catch { Write-Log -Level ERROR "Persistence tactic failed: $($_.Exception.Message)" }
+        try { Invoke-PersistenceTactic } catch { $errorMsg = $_.Exception.Message; Write-Log -Level ERROR "Persistence tactic failed: $errorMsg" }
         $CleanupCommands.Add("Invoke-AtomicTest T1053.005 -TestNumbers 2 -Cleanup") | Out-Null
         
-        try { Invoke-PrivilegeEscalationTactic } catch { Write-Log -Level ERROR "Privilege Escalation tactic failed: $($_.Exception.Message)" }
+        try { Invoke-PrivilegeEscalationTactic } catch { $errorMsg = $_.Exception.Message; Write-Log -Level ERROR "Privilege Escalation tactic failed: $errorMsg" }
         $CleanupCommands.Add("Invoke-AtomicTest T1548.002 -TestNumbers 3 -Cleanup") | Out-Null
         
-        try { Invoke-DefenseEvasionTactic } catch { Write-Log -Level ERROR "Defense Evasion tactic failed: $($_.Exception.Message)" }
+        try { Invoke-DefenseEvasionTactic } catch { $errorMsg = $_.Exception.Message; Write-Log -Level ERROR "Defense Evasion tactic failed: $errorMsg" }
         $CleanupCommands.Add("Invoke-AtomicTest T1562.001 -TestNumbers 17 -Cleanup") | Out-Null
         $CleanupCommands.Add("Invoke-AtomicTest T1105 -TestNumbers 7 -Cleanup") | Out-Null
         $CleanupCommands.Add("Remove-Item (Join-Path '$env:TEMP' 'svchost.exe') -Force -ErrorAction SilentlyContinue") | Out-Null
         
-        try { Invoke-CredentialAccessTactic } catch { Write-Log -Level ERROR "Credential Access tactic failed: $($_.Exception.Message)" }
+        try { Invoke-CredentialAccessTactic } catch { $errorMsg = $_.Exception.Message; Write-Log -Level ERROR "Credential Access tactic failed: $errorMsg" }
         $CleanupCommands.Add("Remove-Item (Join-Path '$env:TEMP' 'SysinternalsSuite.zip') -Force -ErrorAction SilentlyContinue") | Out-Null
         $CleanupCommands.Add("Remove-Item (Join-Path '$env:TEMP' 'SysinternalsSuite') -Recurse -Force -ErrorAction SilentlyContinue") | Out-Null
         $CleanupCommands.Add("Remove-Item (Join-Path '$ScriptRoot' 'lsass.dmp') -Force -ErrorAction SilentlyContinue") | Out-Null
         
-        try { Invoke-DiscoveryTactic } catch { Write-Log -Level ERROR "Discovery tactic failed: $($_.Exception.Message)" }
+        try { Invoke-DiscoveryTactic } catch { $errorMsg = $_.Exception.Message; Write-Log -Level ERROR "Discovery tactic failed: $errorMsg" }
         $CleanupCommands.Add("Remove-Item (Join-Path '$ScriptRoot' 'network_recon.txt') -Force -ErrorAction SilentlyContinue") | Out-Null
         
-        try { Invoke-CommandAndControlTactic } catch { Write-Log -Level ERROR "Command and Control tactic failed: $($_.Exception.Message)" }
+        try { Invoke-CommandAndControlTactic } catch { $errorMsg = $_.Exception.Message; Write-Log -Level ERROR "Command and Control tactic failed: $errorMsg" }
         $CleanupCommands.Add("Remove-Item (Join-Path '$env:TEMP' 'c2_payload.txt') -Force -ErrorAction SilentlyContinue") | Out-Null
         $CleanupCommands.Add("Invoke-AtomicTest T1197 -TestNumbers 2 -Cleanup") | Out-Null
         
-        try { Invoke-ImpactTactic } catch { Write-Log -Level ERROR "Impact tactic failed: $($_.Exception.Message)" }
+        try { Invoke-ImpactTactic } catch { $errorMsg = $_.Exception.Message; Write-Log -Level ERROR "Impact tactic failed: $errorMsg" }
         $CleanupCommands.Add("Invoke-AtomicTest T1490 -TestNumbers 9 -Cleanup") | Out-Null
 
         Write-Log "`n=== Emulation chain completed ==="
@@ -702,8 +733,10 @@ try {
         Write-Log -Level SUCCESS "Review the detailed log at: $LogFile"
     }
 } catch {
-    Write-Log -Level ERROR "A fatal error occurred during emulation: $($_.Exception.Message)"
-    Write-Log -Level ERROR "Stack Trace: $($_.ScriptStackTrace)"
+    $errorMsg = $_.Exception.Message
+    $stackTrace = $_.ScriptStackTrace
+    Write-Log -Level ERROR "A fatal error occurred during emulation: $errorMsg"
+    Write-Log -Level ERROR "Stack Trace: $stackTrace"
     Write-Log "Script terminated. Attempting cleanup..."
 } finally {
     Write-Host "`n" + ("="*80)
