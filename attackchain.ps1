@@ -1,5 +1,5 @@
 <#
-v1.6 
+v1.7 
 .SYNOPSIS
     A modular script to emulate adversary tactics for EDR testing.
 
@@ -15,6 +15,7 @@ v1.6
     - If the script is interrupted, run the cleanup commands displayed at the end
     - You can safely re-run the script multiple times
     - All execution details are logged to Atomic-Execution-Log.csv
+    - v1.7: Changed to install Invoke-AtomicRedTeam from GitHub instead of PowerShell Gallery
 
 .WARNING
     ********************************************************************************
@@ -66,20 +67,34 @@ function Check-Prerequisites {
     }
     Write-Log -Level SUCCESS "Administrator privileges confirmed."
 
-    # 3. Check for and install Invoke-AtomicRedTeam module (FIXED APPROACH)
+    # 3. Check for and install Invoke-AtomicRedTeam module (GITHUB APPROACH)
     Write-Log "Checking for Invoke-AtomicRedTeam module..."
     
-    if (-NOT (Get-Module -ListAvailable -Name Invoke-AtomicRedTeam)) {
-        Write-Log -Level WARN "Module 'Invoke-AtomicRedTeam' not found. Installing..."
-        Install-Module -Name Invoke-AtomicRedTeam -Scope AllUsers -Force -AllowClobber
+    $atomicPath = "C:\AtomicRedTeam\invoke-atomicredteam"
+    if (-NOT (Test-Path $atomicPath)) {
+        Write-Log -Level WARN "Module 'Invoke-AtomicRedTeam' not found. Installing from GitHub..."
+        try {
+            # Download and run the installation script from Red Canary's official GitHub
+            IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1')
+            Install-AtomicRedTeam -Force
+            Write-Log -Level SUCCESS "Successfully installed Invoke-AtomicRedTeam from GitHub."
+        } catch {
+            Write-Log -Level ERROR "Failed to install from GitHub: $($_.Exception.Message)"
+            throw "GitHub installation failed."
+        }
     } else {
-        Write-Log "Module 'Invoke-AtomicRedTeam' found. Ensuring latest version..."
-        Install-Module -Name Invoke-AtomicRedTeam -Scope AllUsers -Force -AllowClobber
+        Write-Log "Module 'Invoke-AtomicRedTeam' found at $atomicPath."
     }
     
-    # Force import the module globally
-    Write-Log "Force importing Invoke-AtomicRedTeam module..."
-    Import-Module Invoke-AtomicRedTeam -Force -Global
+    # Import the module from the installed location
+    Write-Log "Importing Invoke-AtomicRedTeam module..."
+    try {
+        Import-Module "$atomicPath\Invoke-AtomicRedTeam.psd1" -Force -Global
+        Write-Log -Level SUCCESS "Successfully imported Invoke-AtomicRedTeam module."
+    } catch {
+        Write-Log -Level ERROR "Failed to import module: $($_.Exception.Message)"
+        throw "Module import failed."
+    }
     
     # Verify the module commands are available
     Write-Log "Verifying module commands..."
