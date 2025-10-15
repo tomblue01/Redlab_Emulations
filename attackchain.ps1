@@ -1,6 +1,6 @@
 <#
-Version 2.0 
-Updated 15-Oct-2025
+Version 2.0
+Edited 15-Oct-2025
 
 .SYNOPSIS
     Enhanced EDR Attack Chain Simulation with Lateral Movement
@@ -92,7 +92,7 @@ function Write-Banner {
     Write-Host "╚$border╝`n" -ForegroundColor Cyan
 }
 
-# --- Prerequisite Checks (FIXED) ---
+# --- Prerequisite Checks (MINIMAL FIXES ONLY) ---
 function Check-Prerequisites {
     Write-Log "Running prerequisite checks..." -Level INFO -NoConsole
     
@@ -107,7 +107,7 @@ function Check-Prerequisites {
     }
     Write-Log "Administrator privileges confirmed" -Level SUCCESS
     
-    # Install NuGet provider first (without prompting) - FIX #1
+    # FIX #1: Install NuGet provider without prompting
     Write-Log "Checking NuGet provider..." -Level INFO -NoConsole
     $nuget = Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue
     if (-not $nuget -or ($nuget.Version -lt '2.8.5.201')) {
@@ -116,7 +116,7 @@ function Check-Prerequisites {
         Write-Log "NuGet provider installed" -Level SUCCESS -NoConsole
     }
     
-    # Set PSGallery as trusted to avoid prompts - FIX #2
+    # FIX #2: Set PSGallery as trusted to avoid prompts
     Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
     
     # Check/Install Invoke-AtomicRedTeam
@@ -132,7 +132,7 @@ function Check-Prerequisites {
         Write-Log "Invoke-AtomicRedTeam module already installed" -Level INFO -NoConsole
     }
     
-    # Force import and verify commands are available - FIX #3
+    # FIX #3: Force import and verify commands are available
     Remove-Module Invoke-AtomicRedTeam -Force -ErrorAction SilentlyContinue
     Import-Module Invoke-AtomicRedTeam -Force
     
@@ -149,52 +149,15 @@ function Check-Prerequisites {
     }
     Write-Log "Invoke-AtomicRedTeam commands verified" -Level INFO -NoConsole
     
-    # Check/Download Atomics - FIX #4
+    # Check/Download Atomics using OFFICIAL method
     if (-NOT (Test-Path "C:\AtomicRedTeam\atomics")) {
         Write-Log "Downloading Atomic Red Team library..." -Level WARN
         try {
             Install-AtomicRedTeam -GetAtomics -Force
             Write-Log "Atomics library downloaded" -Level SUCCESS
         } catch {
-            Write-Log "Primary download failed: $($_.Exception.Message)" -Level WARN
-            Write-Log "Trying alternative download method..." -Level WARN
-            try {
-                # Alternative method - download and extract manually
-                $atomicsUrl = "https://github.com/redcanaryco/atomic-red-team/archive/master.zip"
-                $downloadPath = Join-Path $env:TEMP "atomic-red-team.zip"
-                $extractPath = "C:\AtomicRedTeam"
-                
-                Write-Log "Downloading from GitHub..." -Level INFO -NoConsole
-                Invoke-WebRequest -Uri $atomicsUrl -OutFile $downloadPath -UseBasicParsing
-                
-                Write-Log "Extracting atomics..." -Level INFO -NoConsole
-                if (Test-Path $extractPath) {
-                    Remove-Item $extractPath -Recurse -Force -ErrorAction SilentlyContinue
-                }
-                New-Item -Path $extractPath -ItemType Directory -Force | Out-Null
-                
-                Expand-Archive -Path $downloadPath -DestinationPath $extractPath -Force
-                
-                # Move atomics folder to correct location
-                $extractedFolder = Join-Path $extractPath "atomic-red-team-master"
-                if (Test-Path $extractedFolder) {
-                    Copy-Item -Path (Join-Path $extractedFolder "atomics") -Destination $extractPath -Recurse -Force
-                    Remove-Item $extractedFolder -Recurse -Force -ErrorAction SilentlyContinue
-                }
-                
-                # Cleanup
-                Remove-Item $downloadPath -Force -ErrorAction SilentlyContinue
-                
-                if (Test-Path "C:\AtomicRedTeam\atomics") {
-                    Write-Log "Atomics library downloaded via alternative method" -Level SUCCESS
-                } else {
-                    throw "Atomics folder not found after extraction"
-                }
-            } catch {
-                Write-Log "Alternative download failed: $($_.Exception.Message)" -Level ERROR
-                Write-Log "Please manually install Atomic Red Team from: https://github.com/redcanaryco/atomic-red-team" -Level ERROR
-                throw "Atomics download failed"
-            }
+            Write-Log "Failed to download Atomics library: $($_.Exception.Message)" -Level ERROR
+            throw "Atomics download failed"
         }
     } else {
         Write-Log "Atomics library present" -Level INFO -NoConsole
@@ -638,7 +601,8 @@ function Collect-RemoteLogs {
         Write-Log "Logs collected from $Target" -Level SUCCESS -NoConsole
         return $true
     } catch {
-        Write-Log "Failed to collect logs from $Target: $($_.Exception.Message)" -Level WARN -NoConsole
+        $errorMsg = "Failed to collect logs from ${Target}: $($_.Exception.Message)"
+        Write-Log $errorMsg -Level WARN -NoConsole
         return $false
     }
 }
@@ -655,7 +619,8 @@ function Cleanup-RemoteTarget {
         Write-Log "Cleanup completed on $Target" -Level SUCCESS -NoConsole
         return $true
     } catch {
-        Write-Log "Cleanup failed on $Target: $($_.Exception.Message)" -Level WARN -NoConsole
+        $errorMsg = "Cleanup failed on ${Target}: $($_.Exception.Message)"
+        Write-Log $errorMsg -Level WARN -NoConsole
         return $false
     }
 }
@@ -758,7 +723,7 @@ function Show-ExecutionSummary {
     Write-Host "Patient Zero: SUCCESS" -ForegroundColor Green
     Write-Host "  └─ Logs: $LogFile`n" -ForegroundColor Gray
     
-    if ($Results) {
+    if ($Results -and $Results.Count -gt 0) {
         Write-Host "Lateral Movement Results:" -ForegroundColor Cyan
         $successCount = 0
         foreach ($result in $Results) {
