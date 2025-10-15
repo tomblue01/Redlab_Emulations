@@ -125,38 +125,7 @@ function Test-AvailableDiskSpace {
     }
 }
 
-function Test-AtomicTestExists {
-    param(
-        [Parameter(Mandatory=$true)][string]$TechniqueId,
-        [Parameter()][int[]]$TestNumbers
-    )
-    
-    try {
-        $availableTests = Invoke-AtomicTest $TechniqueId -ShowDetails -ErrorAction Stop
-        
-        if ($null -eq $availableTests) {
-            Write-Log -Level ERROR "Technique $TechniqueId has no available tests."
-            return $false
-        }
-        
-        if ($TestNumbers) {
-            foreach ($testNum in $TestNumbers) {
-                # Check if test number exists in available tests
-                $testExists = $availableTests | Where-Object { $_.TestNumber -eq $testNum }
-                if (-not $testExists) {
-                    Write-Log -Level ERROR "Test #$testNum does not exist for technique $TechniqueId"
-                    return $false
-                }
-            }
-        }
-        
-        return $true
-    } catch {
-        $errorMsg = $_.Exception.Message
-        Write-Log -Level WARN "Could not verify test existence for $TechniqueId : $errorMsg"
-        return $false
-    }
-}
+
 
 function Invoke-WithRetry {
     param(
@@ -255,16 +224,10 @@ function Check-Prerequisites {
         Write-Log -Level WARN "Module 'Invoke-AtomicRedTeam' not found. Installing from GitHub..."
         
         try {
-            # Download and run the installation script from Red Canary's official GitHub with retry
-            Invoke-WithRetry -OperationName "GitHub Module Download" -MaxRetries 3 -ScriptBlock {
-                $installScript = (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1')
-                Invoke-Expression $installScript
-            }
-            
-            # Install the module
-            Invoke-WithRetry -OperationName "Module Installation" -MaxRetries 2 -ScriptBlock {
-                Install-AtomicRedTeam -Force -ErrorAction Stop
-            }
+            # Download and execute installation script, then immediately call Install-AtomicRedTeam
+            # CRITICAL: Must be in one line so Install-AtomicRedTeam function is available
+            Write-Log "Downloading installation script from GitHub..."
+            IEX (IWR 'https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1' -UseBasicParsing); Install-AtomicRedTeam -GetAtomics -Force
             
             # Verify installation succeeded
             if (-NOT (Test-Path $modulePsdPath)) {
@@ -275,7 +238,7 @@ function Check-Prerequisites {
         } catch {
             $errorMsg = $_.Exception.Message
             Write-Log -Level ERROR "Failed to install from GitHub: $errorMsg"
-            Write-Log -Level ERROR "Please manually install using: IEX (IWR 'https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1' -UseBasicParsing); Install-AtomicRedTeam"
+            Write-Log -Level ERROR "Please manually run: IEX (IWR 'https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1' -UseBasicParsing); Install-AtomicRedTeam -GetAtomics"
             throw "GitHub installation failed"
         }
     } else {
@@ -311,9 +274,8 @@ function Check-Prerequisites {
     if (-NOT (Test-Path "C:\AtomicRedTeam\atomics")) {
         Write-Log -Level WARN "Atomic Red Team test library not found. Downloading..."
         try {
-            Invoke-WithRetry -OperationName "Atomics Library Download" -MaxRetries 3 -ScriptBlock {
-                Install-AtomicRedTeam -GetAtomics -Force -ErrorAction Stop
-            }
+            # If module is already loaded, just call Install-AtomicRedTeam directly
+            Install-AtomicRedTeam -GetAtomics -Force -ErrorAction Stop
             
             # Verify download succeeded
             if (-NOT (Test-Path "C:\AtomicRedTeam\atomics")) {
@@ -346,12 +308,6 @@ function Invoke-SafeAtomicTest {
     Write-Log "Checking available tests for $TechniqueId..."
     
     try {
-        # Verify tests exist before attempting to run
-        if (-not (Test-AtomicTestExists -TechniqueId $TechniqueId -TestNumbers $TestNumbers)) {
-            Write-Log -Level ERROR "Test verification failed for $TechniqueId. Skipping."
-            return
-        }
-        
         Invoke-AtomicTest $TechniqueId -ShowDetailsBrief -ErrorAction SilentlyContinue
         
         if ($CheckOnly) { return }
@@ -567,10 +523,7 @@ function Invoke-CredentialAccessTactic {
     try {
         if (-not (Test-Path $procdumpPath)) {
             Write-Log "Downloading Sysinternals Suite..."
-            
-            Invoke-WithRetry -OperationName "Sysinternals Download" -MaxRetries 3 -ScriptBlock {
-                (New-Object System.Net.WebClient).DownloadFile("https://download.sysinternals.com/files/SysinternalsSuite.zip", $sysinternalsZip)
-            }
+            (New-Object System.Net.WebClient).DownloadFile("https://download.sysinternals.com/files/SysinternalsSuite.zip", $sysinternalsZip)
             
             Write-Log "Extracting Sysinternals Suite..."
             Expand-Archive -Path $sysinternalsZip -DestinationPath $sysinternalsDir -Force -ErrorAction Stop
@@ -635,10 +588,8 @@ function Invoke-CommandAndControlTactic {
     Write-Log "Executing T1105: Ingress Tool Transfer via PowerShell..."
     $downloadFile = Join-Path $env:TEMP "c2_payload.txt"
     try {
-        # Using a reliable test file from Microsoft with retry logic
-        Invoke-WithRetry -OperationName "C2 Download Test" -MaxRetries 2 -ScriptBlock {
-            Invoke-WebRequest -Uri 'https://www.bing.com/robots.txt' -OutFile $downloadFile -TimeoutSec 30 -ErrorAction Stop
-        }
+        # Using a reliable test file from Microsoft
+        Invoke-WebRequest -Uri 'https://www.bing.com/robots.txt' -OutFile $downloadFile -TimeoutSec 30 -ErrorAction Stop
         
         if (Test-Path $downloadFile) {
             Write-Log -Level SUCCESS "Successfully executed download command."
