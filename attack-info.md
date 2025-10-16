@@ -108,13 +108,12 @@ All test numbers, technique IDs, task names, and manually-coded attacks have bee
 - Uses `procdump64.exe` to dump LSASS process memory
 - Creates `lsass.dmp` file
 
-**EDR should detect (and BLOCK):**
+**EDR should detect:**
 - Download of Sysinternals tools
 - `procdump64.exe` execution
 - Process handle requests to `lsass.exe`
 - `PROCESS_VM_READ` access to LSASS
 - `.dmp` file creation containing LSASS memory
-- **This should be BLOCKED by any decent EDR**
 
 ---
 
@@ -193,7 +192,7 @@ All test numbers, technique IDs, task names, and manually-coded attacks have bee
 
 ## Summary of Critical EDR Alerts Expected
 
-### **HIGH SEVERITY (Should be BLOCKED):**
+### **HIGH SEVERITY:**
 1. **LSASS memory access/dumping** - Any attempt to read LSASS memory
 2. **Windows Defender disablement** - Registry or service modifications
 3. **UAC bypass attempts** - Fodhelper abuse via registry
@@ -281,18 +280,3 @@ powershell.exe → Start-BitsTransfer (BITS job)
 
 ---
 
-## Testing Recommendations
-
-✅ **Good EDR should:**
-- Block LSASS access completely
-- Alert on all Defender tampering attempts
-- Detect and flag UAC bypass techniques
-- Identify LOLBin abuse patterns
-- Correlate multiple reconnaissance commands
-- Flag masqueraded executables
-
-⚠️ **If these succeed without alerts, investigate:**
-- EDR configuration/tuning
-- Rule coverage gaps
-- Process monitoring depth
-- Memory protection capabilities
