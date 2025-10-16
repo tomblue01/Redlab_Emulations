@@ -1,5 +1,5 @@
 <#
-v1.8 - Hardened Edition
+v1.8.1
 .SYNOPSIS
     A modular script to emulate adversary tactics for EDR testing.
 
@@ -274,8 +274,9 @@ function Check-Prerequisites {
     if (-NOT (Test-Path "C:\AtomicRedTeam\atomics")) {
         Write-Log -Level WARN "Atomic Red Team test library not found. Downloading..."
         try {
-            # If module is already loaded, just call Install-AtomicRedTeam directly
-            Install-AtomicRedTeam -GetAtomics -Force -ErrorAction Stop
+            # Need to re-run installation script to get Install-AtomicRedTeam function
+            Write-Log "Downloading installation script to access Install-AtomicRedTeam function..."
+            IEX (IWR 'https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1' -UseBasicParsing); Install-AtomicRedTeam -GetAtomics -Force
             
             # Verify download succeeded
             if (-NOT (Test-Path "C:\AtomicRedTeam\atomics")) {
@@ -286,7 +287,7 @@ function Check-Prerequisites {
         } catch {
             $errorMsg = $_.Exception.Message
             Write-Log -Level ERROR "Failed to download the Atomics library: $errorMsg"
-            Write-Log -Level ERROR "Please check your internet connection and try again."
+            Write-Log -Level ERROR "Please manually run: IEX (IWR 'https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1' -UseBasicParsing); Install-AtomicRedTeam -GetAtomics"
             throw "Atomics download failed"
         }
     } else {
