@@ -108,24 +108,11 @@ If Windows Defender Service is not running, you will NOT need exclusions. You ca
 
 If status is "Stopped", exclusions are not required (and the following commands will probably error out at any rate). 
 
-### Step 1: Check and Disable Tamper Protection (If Needed)
-
-**Check Tamper Protection Status:**
-```powershell
-Get-MpComputerStatus | Select-Object IsTamperProtected
-```
-
-**If Tamper Protection is Enabled:**
-1. Open **Windows Security**
-2. Go to **Virus & threat protection**
-3. Click **Manage settings**
-4. Scroll down and turn OFF **Tamper Protection**
-
-### Step 2: Add Required Exclusions
+### Step 1: Add Required Exclusions
 
 **IMPORTANT:** Run these commands in PowerShell as Administrator **BEFORE** running the attack simulation script.
 
-#### Method 1: PowerShell Commands (Recommended)
+#### Run These PowerShell Commands 
 
 ```powershell
 # Add folder exclusions for script and atomics locations
@@ -142,59 +129,14 @@ Get-MpPreference | Select-Object -ExpandProperty ExclusionProcess
 
 **Note:** Adjust the path `C:\shared` if your script is located elsewhere.
 
-#### Method 2: Windows Security GUI
-
-1. Open **Windows Security** (Windows + I → Privacy & Security → Windows Security)
-2. Go to **Virus & threat protection**
-3. Click **Manage settings** under "Virus & threat protection settings"
-4. Scroll down to **Exclusions**
-5. Click **Add or remove exclusions**
-6. Click **Add an exclusion** → **Folder**
-7. Add these folders:
-   - Your script directory (e.g., `C:\shared` or wherever you placed attackchain.ps1)
-   - `C:\AtomicRedTeam` (will be created during first run)
-
-### Step 3: Verify Configuration
+### Step 2: Optional: Verify Configuration
 
 After adding exclusions, verify they're active:
 
 ```powershell
-# Check Real-time Protection status
-Get-MpComputerStatus | Select-Object RealTimeProtectionEnabled, IsTamperProtected
-
 # Verify exclusions
 Get-MpPreference | Select-Object -ExpandProperty ExclusionPath
 ```
-
-### Alternative: Temporarily Disable Real-time Protection
-
-**For Lab Testing Only:**
-```powershell
-# Disable real-time protection temporarily
-Set-MpPreference -DisableRealtimeMonitoring $true
-
-# Verify it's disabled
-Get-MpPreference | Select-Object DisableRealtimeMonitoring
-```
-
-**Warning:** Real-time protection may automatically re-enable after a reboot or timeout.
-
-### Troubleshooting Exclusions
-
-**Issue: Cannot add exclusions**
-- **Cause**: Tamper Protection is enabled
-- **Solution**: Disable Tamper Protection via Windows Security GUI first
-
-**Issue: Exclusions not working**
-- **Cause**: Exclusion paths are incorrect or AMSI is still blocking
-- **Solution**: 
-  1. Verify exact paths with `Get-MpPreference | Select-Object -ExpandProperty ExclusionPath`
-  2. Try adding PowerShell process exclusion
-  3. Temporarily disable real-time protection for testing
-
-**Issue: Changes revert after reboot**
-- **Cause**: Group Policy or enterprise management
-- **Solution**: Check with your system administrator about security policies
 
 ## 📋 Installation
 
@@ -203,24 +145,12 @@ Get-MpPreference | Select-Object DisableRealtimeMonitoring
 1. **Open PowerShell as Administrator**
    - Right-click PowerShell and select **"Run as Administrator"**
 
-2. **Configure Windows Defender Exclusions (REQUIRED)**
-   ```powershell
-   # Add required exclusions BEFORE running the script
-   Add-MpPreference -ExclusionPath "C:\shared"
-   Add-MpPreference -ExclusionPath "C:\AtomicRedTeam"
-   
-   # Verify exclusions
-   Get-MpPreference | Select-Object -ExpandProperty ExclusionPath
-   ```
-   
-   See [Windows Defender Exclusions](#️-windows-defender-exclusions-required) section for detailed instructions.
-
-3. **Set Execution Policy (if needed)**
+2. **Set Execution Policy (if needed)**
    ```powershell
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
    ```
 
-4. **Download the Script**
+3. **Download the Script**
    ```powershell
    # Option 1: Clone repository
    git clone https://github.com/yourusername/edr-attack-simulation.git
@@ -230,7 +160,7 @@ Get-MpPreference | Select-Object DisableRealtimeMonitoring
    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yourusername/edr-attack-simulation/main/attackchain.ps1" -OutFile "attackchain.ps1"
    ```
 
-5. **Run the Script**
+4. **Run the Script**
    ```powershell
    .\attackchain.ps1
    ```
