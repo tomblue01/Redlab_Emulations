@@ -102,7 +102,7 @@ FullyQualifiedErrorId: ScriptContainedMaliciousContent
 - Less restrictive default configuration
 
 **Note**
-If Windows Defender Service is not running, you will NOT need exclusions. You can test by running the following: 
+If Windows Defender Service is not running, you will NOT need exclusions. You can test by running the following in Powershell: 
 
 ```Get-Service WinDefend | Select Status, StartType```
 
