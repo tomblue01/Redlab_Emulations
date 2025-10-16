@@ -1,20 +1,6 @@
 # Attack Chain Emulation Script - attackchain.ps1
 
-This Script is an emulation script leverating powershell and Atomic RedTeam tools. 
-
-USE AT YOUR OWN RISK!!! 
-
-This script is not meant for production systems!!
-
-USE IN A LAB ENVIRONMENT! 
-
-The script is designed to emulate a complete attack chain and can be used to create events and logs for various security systems like enpoint security and EDR. 
-
-The Author assumes NO Responsibility for the use or misuse of this script.
-
-# EDR Attack Simulation Script
-
-A comprehensive PowerShell script for testing Endpoint Detection and Response (EDR) solutions using MITRE ATT&CK techniques via the Atomic Red Team framework.
+A comprehensive PowerShell script for testing security systems using MITRE ATT&CK techniques via the Atomic Red Team framework.
 
 ## ⚠️ WARNING - AUTHORIZED USE ONLY
 
@@ -45,7 +31,7 @@ A comprehensive PowerShell script for testing Endpoint Detection and Response (E
 
 ## 🎯 Overview
 
-This script automates the execution of adversary tactics and techniques to test EDR detection capabilities. It chains together multiple MITRE ATT&CK techniques across the attack lifecycle, from initial execution to impact, simulating realistic adversary behavior.
+This script (v1.8 - Hardened Edition) automates the execution of adversary tactics and techniques to test security system detection capabilities. It chains together multiple MITRE ATT&CK techniques across the attack lifecycle, from initial execution to impact, simulating realistic adversary behavior.
 
 ### What This Script Does
 
@@ -54,7 +40,7 @@ The script executes a sequential chain of attack techniques organized by MITRE A
 1. **Execution** - VBScript execution for reconnaissance
 2. **Persistence** - Scheduled task creation
 3. **Privilege Escalation** - UAC bypass attempts
-4. **Defense Evasion** - Defender tampering, encoded commands, file masquerading
+4. **Defense Evasion** - Defender tampering, encoded commands, file masquerading, ingress tool transfer
 5. **Credential Access** - LSASS memory dumping attempts
 6. **Discovery** - System and network reconnaissance
 7. **Command & Control** - File downloads and BITS jobs
@@ -62,51 +48,57 @@ The script executes a sequential chain of attack techniques organized by MITRE A
 
 ### Key Features
 
+✅ **Automatic Prerequisites Check** - Verifies PowerShell version, admin rights, disk space, and network connectivity  
+✅ **GitHub Installation** - Automatically installs Invoke-AtomicRedTeam from official Red Canary GitHub  
+✅ **Windows Version Detection** - Detects Windows 10 vs 11 and adjusts expectations accordingly  
 ✅ **Automatic Cleanup** - Removes artifacts from previous runs before starting  
-✅ **Idempotent Design** - Can be safely run multiple times  
+✅ **Robust Error Handling** - Continues execution even if individual tests fail  
+✅ **Network Retry Logic** - Automatically retries failed downloads  
 ✅ **Detailed Logging** - Creates comprehensive execution logs (CSV and text)  
 ✅ **Non-Interactive** - Runs without user prompts or hangs  
-✅ **EDR-Focused** - Tests detection capabilities, not exploitation  
-✅ **MITRE ATT&CK Aligned** - Uses techniques from the MITRE ATT&CK framework
+✅ **Idempotent Design** - Can be safely run multiple times
 
 ## 🔧 Requirements
 
 ### System Requirements
 - **Operating System**: Windows 10/11 or Windows Server 2016+
-- **PowerShell**: Version 5.1 or higher
-- **Privileges**: **Administrator rights required**
+- **PowerShell**: Version 5.1 or higher (automatically verified)
+- **Privileges**: **Administrator rights required** (automatically verified)
 - **Internet Connection**: Required for initial Atomic Red Team download
-- **Disk Space**: ~500MB for Atomic Red Team library
+- **Disk Space**: ~200MB minimum, ~500MB recommended (automatically verified)
 
 ### Software Dependencies
-- PowerShell Execution Policy must allow script execution
+- PowerShell Execution Policy must allow script execution (`RemoteSigned` or less restrictive)
 - .NET Framework 4.5 or higher
-- Windows Management Framework 5.1+
+- TLS 1.2 capable system (automatically configured)
 
-**Note**: The script will automatically install the Invoke-AtomicRedTeam module if not present.
+**Note**: The script will automatically install the Invoke-AtomicRedTeam module from GitHub if not present.
 
 ## 📋 Installation
 
-### 1. Clone the Repository
+### Quick Start
 
-```powershell
-git clone https://github.com/yourusername/edr-attack-simulation.git
-cd edr-attack-simulation
-```
+1. **Open PowerShell as Administrator**
+   - Right-click PowerShell and select **"Run as Administrator"**
 
-### 2. Set Execution Policy (if needed)
+2. **Set Execution Policy (if needed)**
+   ```powershell
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+   ```
 
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
-
-### 3. Verify Administrator Privileges
-
-Right-click PowerShell and select **"Run as Administrator"**
+3. **Download the Script**
+   ```powershell
+   # Option 1: Clone repository
+   git clone https://github.com/tomblue01/Redlab_Emulations.git
+   cd Redlab-Emulations
+   
+   # Option 2: Direct download
+   Invoke-WebRequest -Uri "https://raw.githubusercontent.com/tomblue01/Redlab_Emulations/main/attackchain.ps1" -OutFile "attackchain.ps1"
+   ```
 
 ## 🚀 Usage
 
-### Basic Execution
+### Running the Script
 
 ```powershell
 # Navigate to script directory
@@ -116,182 +108,415 @@ cd C:\path\to\script
 .\attackchain.ps1
 ```
 
-### What to Expect
+### What Happens During Execution
 
-The script will:
-1. Check prerequisites and install required modules
-2. Download Atomic Red Team library (first run only)
-3. Clean up artifacts from previous runs
-4. Execute each tactic sequentially with detailed output
-5. Generate execution logs in the script directory
+**Phase 1: Prerequisites (1-5 minutes first run, <30 seconds subsequent runs)**
+- Detects Windows version and PowerShell version
+- Checks for administrator privileges
+- Verifies execution policy
+- Tests network connectivity
+- Checks available disk space
+- Downloads and installs Invoke-AtomicRedTeam module from GitHub (first run only)
+- Downloads Atomic Red Team test library (first run only)
+
+**Phase 2: Initial Cleanup (<10 seconds)**
+- Removes any artifacts from previous script runs
+
+**Phase 3: Attack Chain Execution (5-10 minutes)**
+- Executes 8 MITRE ATT&CK tactics sequentially
+- Each tactic runs cleanup before execution to prevent conflicts
+- All actions are logged to both text and CSV files
+
+**Phase 4: Completion**
+- Displays cleanup commands for manual artifact removal
+- Shows log file locations
 
 ### Expected Runtime
 
-- **First run**: 10-15 minutes (includes downloads)
-- **Subsequent runs**: 5-8 minutes
+- **First run**: 10-15 minutes (includes module installation and atomic library download)
+- **Subsequent runs**: 5-10 minutes
 
-## 📊 MITRE ATT&CK Techniques Tested
+### Script Output
+
+The script provides color-coded console output:
+- **WHITE** - Informational messages
+- **YELLOW** - Warnings
+- **RED** - Errors
+- **GREEN** - Success messages
+
+## 📊 MITRE ATT&CK Techniques Executed
 
 | Tactic | Technique ID | Technique Name | Test Description |
 |--------|--------------|----------------|------------------|
-| Execution | T1059.005 | VBScript | CScript execution for recon |
-| Persistence | T1053.005 | Scheduled Task | Local scheduled task creation |
-| Privilege Escalation | T1548.002 | Bypass UAC | Fodhelper UAC bypass |
-| Defense Evasion | T1562.001 | Impair Defenses | Windows Defender tampering |
-| Defense Evasion | T1027 | Obfuscated Files | Base64 encoded commands |
-| Defense Evasion | T1105 | Ingress Tool Transfer | File download via certutil |
-| Defense Evasion | T1036.003 | Masquerading | Process masquerading |
-| Credential Access | T1003.001 | LSASS Memory | ProcDump LSASS dumping |
-| Discovery | T1082 | System Information | System enumeration |
-| Discovery | T1057 | Process Discovery | Process enumeration |
-| Discovery | T1049 | Network Connections | Network connection enumeration |
+| Execution | T1059.005 | VBScript | CScript execution for reconnaissance |
+| Persistence | T1053.005 | Scheduled Task | Local scheduled task creation (test #2) |
+| Privilege Escalation | T1548.002 | Bypass UAC | Fodhelper UAC bypass (test #3) |
+| Defense Evasion | T1562.001 | Impair Defenses | Windows Defender command prompt tampering (test #17) |
+| Defense Evasion | T1027 | Obfuscated Files | Base64 encoded PowerShell commands |
+| Defense Evasion | T1105 | Ingress Tool Transfer | File download via certutil (test #7) |
+| Defense Evasion | T1036.003 | Masquerading | Process masquerading (svchost.exe) |
+| Credential Access | T1003.001 | LSASS Memory | ProcDump LSASS memory dumping attempt |
+| Discovery | T1082 | System Information | System enumeration (test #1) |
+| Discovery | T1057 | Process Discovery | Process list enumeration (test #2) |
+| Discovery | T1049 | Network Connections | Network connection enumeration (test #1) |
 | Discovery | T1018 | Remote System Discovery | ARP table enumeration |
-| Command & Control | T1105 | Ingress Tool Transfer | File download simulation |
-| Command & Control | T1197 | BITS Jobs | BITS download |
-| Impact | T1490 | Inhibit System Recovery | Disable system restore |
+| Command & Control | T1105 | Ingress Tool Transfer | File download via Invoke-WebRequest |
+| Command & Control | T1197 | BITS Jobs | BITS download job (test #2) |
+| Impact | T1490 | Inhibit System Recovery | Disable system restore via registry (test #9) |
 
 ## 📝 Output Files
 
-The script generates several log files in the script directory:
+The script generates several files in the script directory:
 
-- **Attack-Simulation-Log.txt** - Detailed text log with timestamps
-- **Atomic-Execution-Log.csv** - CSV log for analysis and reporting
-- **network_recon.txt** - ARP table output
-- **lsass.dmp** - LSASS dump (if successful - should be blocked by EDR)
+### Log Files
+- **Attack-Simulation-Log.txt** - Detailed timestamped log of all script actions
+  - Contains INFO, WARN, ERROR, and SUCCESS messages
+  - Use for troubleshooting and detailed analysis
+  
+- **Atomic-Execution-Log.csv** - CSV format log of Atomic Red Team test executions
+  - Contains: Execution Time (UTC/Local), Technique ID, Test Number, Test Name, Hostname, IP Address, Username, GUID, ProcessId, ExitCode
+  - Use for analysis, reporting, and correlation with security tool alerts
+
+### Artifact Files (Created During Tests)
+- **network_recon.txt** - ARP table output from T1018 discovery
+- **lsass.dmp** - LSASS dump file (only if dump succeeds - typically blocked)
+- **temp-recon.vbs** - Temporary VBScript file (auto-cleaned)
+
+## 🔍 Analyzing Logs
+
+### View All Logs
+```powershell
+# View full text log
+Get-Content .\Attack-Simulation-Log.txt
+
+# View CSV log as table
+Import-Csv .\Atomic-Execution-Log.csv | Format-Table -AutoSize
+```
+
+### Filter for Errors Only
+```powershell
+# Extract all ERROR messages
+Get-Content .\Attack-Simulation-Log.txt | Where-Object { $_ -match "\[ERROR\]" }
+
+# Save errors to separate file
+Get-Content .\Attack-Simulation-Log.txt | Where-Object { $_ -match "\[ERROR\]" } | Out-File "Errors-Only.txt"
+```
+
+### Filter for Warnings and Errors
+```powershell
+# Extract WARN and ERROR messages
+Get-Content .\Attack-Simulation-Log.txt | Where-Object { $_ -match "\[(ERROR|WARN)\]" }
+```
+
+### Count Test Results
+```powershell
+# Count successful tests
+(Get-Content .\Attack-Simulation-Log.txt | Where-Object { $_ -match "\[SUCCESS\]" }).Count
+
+# Count failed tests
+(Get-Content .\Attack-Simulation-Log.txt | Where-Object { $_ -match "\[ERROR\]" }).Count
+```
+
+### Analyze CSV by Technique
+```powershell
+# Group tests by technique
+Import-Csv .\Atomic-Execution-Log.csv | Group-Object -Property Technique | Format-Table Count, Name
+
+# View specific technique details
+Import-Csv .\Atomic-Execution-Log.csv | Where-Object { $_.Technique -eq "T1053.005" } | Format-List
+```
 
 ## 🧹 Cleanup
 
 ### Automatic Cleanup
 
-The script automatically cleans up before each test run. If you need to perform manual cleanup:
+The script automatically performs cleanup:
+- **Before script execution**: Removes artifacts from any previous runs
+- **Before each test**: Runs cleanup for that specific test to prevent conflicts
+
+### Manual Cleanup
+
+If needed, cleanup commands are displayed at the end of each script run. To manually cleanup:
 
 ```powershell
-# Remove scheduled task
+# Remove scheduled tasks
 schtasks /delete /tn "spawn" /f
 
-# Remove masqueraded files
-Remove-Item $env:TEMP\svchost.exe -Force -ErrorAction SilentlyContinue
+# Remove temporary files
+Remove-Item (Join-Path $env:TEMP 'svchost.exe') -Force -ErrorAction SilentlyContinue
+Remove-Item (Join-Path $env:TEMP 'c2_payload.txt') -Force -ErrorAction SilentlyContinue
+Remove-Item (Join-Path $env:TEMP 'SysinternalsSuite.zip') -Force -ErrorAction SilentlyContinue
+Remove-Item (Join-Path $env:TEMP 'SysinternalsSuite') -Recurse -Force -ErrorAction SilentlyContinue
 
-# Remove downloaded payloads
-Remove-Item $env:TEMP\c2_payload.txt -Force -ErrorAction SilentlyContinue
-
-# Remove LSASS dump (if created)
+# Remove script artifacts
 Remove-Item .\lsass.dmp -Force -ErrorAction SilentlyContinue
+Remove-Item .\network_recon.txt -Force -ErrorAction SilentlyContinue
+Remove-Item .\temp-recon.vbs -Force -ErrorAction SilentlyContinue
 
-# Run Atomic cleanup commands (displayed at end of script)
+# Run Atomic test cleanup commands
 Invoke-AtomicTest T1053.005 -TestNumbers 2 -Cleanup
 Invoke-AtomicTest T1548.002 -TestNumbers 3 -Cleanup
 Invoke-AtomicTest T1562.001 -TestNumbers 17 -Cleanup
-# ... (see full list in script output)
+Invoke-AtomicTest T1105 -TestNumbers 7 -Cleanup
+Invoke-AtomicTest T1197 -TestNumbers 2 -Cleanup
+Invoke-AtomicTest T1490 -TestNumbers 9 -Cleanup
 ```
 
-## 🛡️ Expected EDR Behavior
+### Complete System Cleanup
 
-### What Should Trigger Alerts
-
-Your EDR solution should detect and alert on:
-
-✅ **Scheduled task creation** for persistence  
-✅ **UAC bypass attempts** using fodhelper  
-✅ **Defender tampering attempts** (will be blocked)  
-✅ **Process masquerading** (legitimate binary copied to suspicious name)  
-✅ **LSASS access attempts** (should be blocked)  
-✅ **Suspicious command-line activity**  
-✅ **Encoded PowerShell commands**  
-✅ **certutil used for file downloads**  
-✅ **System recovery inhibition attempts**
-
-### Expected Blocks/Failures
-
-Some techniques should **FAIL** - this indicates security controls are working:
-
-❌ **T1562.001** - Defender tampering (Access Denied - GOOD!)  
-❌ **T1003.001** - LSASS dumping (Access Denied - GOOD!)
-
-These failures are **SUCCESS indicators** for your security posture.
-
-## 🔍 Analyzing Results
-
-### Check Your EDR Console
-
-After running the script, review your EDR console for:
-
-1. **Detection Coverage** - Which techniques were detected?
-2. **Alert Quality** - Are alerts clear and actionable?
-3. **Response Actions** - Did the EDR block malicious actions?
-4. **False Positives** - Any legitimate activity flagged?
-5. **Blind Spots** - Which techniques went undetected?
-
-### Review Log Files
-
+To completely remove Atomic Red Team (optional):
 ```powershell
-# View text log
-Get-Content .\Attack-Simulation-Log.txt
-
-# Analyze CSV log
-Import-Csv .\Atomic-Execution-Log.csv | Format-Table
-
-# Check for failed tests
-Get-Content .\Attack-Simulation-Log.txt | Select-String "ERROR"
+Remove-Item C:\AtomicRedTeam -Recurse -Force
 ```
 
-## ⚙️ Troubleshooting
+## 🛠️ Troubleshooting
 
-### Script Requires Administrator Rights
+### Prerequisites Issues
 
-**Error**: "This script must be run with Administrator privileges"
+#### Script Requires Administrator Rights
 
-**Solution**: Right-click PowerShell and select "Run as Administrator"
+**Symptom**: Error message "This script must be run with Administrator privileges"
 
-### Execution Policy Restrictions
+**Solution**: 
+1. Close PowerShell
+2. Right-click PowerShell icon
+3. Select "Run as Administrator"
+4. Navigate back to script directory and run again
 
-**Error**: "Cannot be loaded because running scripts is disabled"
+#### Execution Policy Restrictions
+
+**Symptom**: Error "cannot be loaded because running scripts is disabled on this system"
 
 **Solution**:
 ```powershell
+# Check current policy
+Get-ExecutionPolicy
+
+# Set to allow script execution
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Verify change
+Get-ExecutionPolicy
 ```
 
-### Module Installation Fails
+#### PowerShell Version Too Old
 
-**Error**: "Failed to install 'Invoke-AtomicRedTeam' module"
+**Symptom**: Error "PowerShell 5.0 or higher is required"
+
+**Solution**: Update Windows Management Framework:
+- Windows 10/11: Already includes PowerShell 5.1+
+- Windows Server 2012 R2/2016: Install [WMF 5.1](https://www.microsoft.com/en-us/download/details.aspx?id=54616)
+
+### Installation Issues
+
+#### Module Installation Fails - Network Error
+
+**Symptom**: "Failed to install from GitHub" with network-related errors
+
+**Solution**:
+1. Verify internet connectivity:
+   ```powershell
+   Test-NetConnection raw.githubusercontent.com -Port 443
+   ```
+2. Check firewall/proxy settings
+3. Manually install:
+   ```powershell
+   IEX (IWR 'https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1' -UseBasicParsing); Install-AtomicRedTeam -GetAtomics
+   ```
+
+#### Module Installation Fails - TLS Error
+
+**Symptom**: Error about SSL/TLS secure channel
 
 **Solution**:
 ```powershell
-# Manually install module
-Install-Module -Name Invoke-AtomicRedTeam -Scope CurrentUser -Force
+# Enable TLS 1.2
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+# Then run installation manually
+IEX (IWR 'https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1' -UseBasicParsing); Install-AtomicRedTeam -GetAtomics
 ```
 
-### Tests Timeout or Hang
+#### Module Commands Not Available
 
-The script includes automatic cleanup to prevent hanging on prompts. If tests still timeout:
+**Symptom**: "Failed to load 'Invoke-AtomicRedTeam' module commands"
 
-1. Ensure all previous artifacts are cleaned up
-2. Check for antivirus blocking test execution
-3. Review the execution log for specific errors
+**Solution**:
+1. Check if module files exist:
+   ```powershell
+   Test-Path "C:\AtomicRedTeam\invoke-atomicredteam\Invoke-AtomicRedTeam.psd1"
+   ```
+2. If missing, delete and reinstall:
+   ```powershell
+   Remove-Item C:\AtomicRedTeam -Recurse -Force
+   # Then run attackchain.ps1 again
+   ```
+3. Manually import module:
+   ```powershell
+   Import-Module "C:\AtomicRedTeam\invoke-atomicredteam\Invoke-AtomicRedTeam.psd1" -Force
+   ```
 
-### Network Download Failures
+#### Atomics Library Download Fails
 
-If atomic downloads fail, ensure:
-- Internet connection is active
-- Firewall allows PowerShell to access GitHub
-- Proxy settings are configured (if applicable)
+**Symptom**: "Failed to download the Atomics library"
 
-## 🤝 Contributing
+**Solution**:
+1. Verify 500MB+ free disk space
+2. Check internet connectivity to GitHub
+3. Manually download:
+   ```powershell
+   Install-AtomicRedTeam -GetAtomics -Force
+   ```
 
-Contributions are welcome! Please:
+### Execution Issues
 
-1. Fork the repository
-2. Create a feature branch
-3. Test thoroughly in a lab environment
-4. Submit a pull request with clear description
+#### Test Hangs or Times Out
+
+**Symptom**: Script appears frozen on a specific test
+
+**Cause**: Previous test artifacts may be causing prompts
+
+**Solution**:
+1. Press Ctrl+C to stop script
+2. Run manual cleanup (see Cleanup section)
+3. Run script again - automatic cleanup should handle it
+
+#### Individual Tests Fail
+
+**Symptom**: Specific techniques show [ERROR] in logs
+
+**Expected Behavior**: Some tests are EXPECTED to fail:
+- T1562.001 (Defender tampering) - Often blocked by Tamper Protection
+- T1003.001 (LSASS dump) - Should be blocked by security controls
+
+**Investigation**:
+1. Check Attack-Simulation-Log.txt for specific error message
+2. Extract all errors:
+   ```powershell
+   Get-Content .\Attack-Simulation-Log.txt | Select-String "ERROR"
+   ```
+3. Common causes:
+   - Security software blocking the test (expected)
+   - Missing prerequisites (script should auto-install)
+   - Test-specific requirements not met
+
+#### All Tests Fail After Prerequisites
+
+**Symptom**: Prerequisites pass but every test fails
+
+**Solution**:
+1. Verify module loaded:
+   ```powershell
+   Get-Command Invoke-AtomicTest
+   ```
+2. Check for module errors in log:
+   ```powershell
+   Get-Content .\Attack-Simulation-Log.txt | Select-String "module"
+   ```
+3. Try importing module manually and re-running script
+
+### Windows-Specific Issues
+
+#### Windows 11 Specific Behavior
+
+**Note**: Windows 11 has enhanced security that may cause certain tests to behave differently:
+- Tamper Protection is typically enabled by default (blocks T1562.001)
+- Credential Guard may be enabled (blocks T1003.001)
+- These are EXPECTED and indicate good security posture
+
+**Script Behavior**: The script detects Windows 11 and logs warnings about expected differences
+
+#### Windows Server Behavior
+
+**Note**: Windows Server may have different default security settings:
+- UAC may be configured differently
+- Windows Defender may not be present (Server Core)
+- Some tests may require adjustment
+
+### Log Analysis Issues
+
+#### CSV File Won't Open
+
+**Symptom**: Excel shows garbled data or won't open CSV
+
+**Solution**:
+```powershell
+# View in PowerShell instead
+Import-Csv .\Atomic-Execution-Log.csv | Out-GridView
+
+# Or export with proper formatting
+Import-Csv .\Atomic-Execution-Log.csv | Export-Csv .\Formatted-Log.csv -NoTypeInformation
+```
+
+#### Missing Tests in CSV
+
+**Note**: The CSV only logs tests executed via `Invoke-AtomicTest`. Custom implementations (like VBScript, encoded PowerShell, etc.) appear only in the text log.
+
+**To see all activities**:
+```powershell
+Get-Content .\Attack-Simulation-Log.txt
+```
+
+### Performance Issues
+
+#### Script Runs Very Slowly
+
+**Causes**:
+- First run includes large downloads (~500MB atomics library)
+- Security software may be scanning each test
+- Network latency on downloads
+
+**Solutions**:
+- Subsequent runs are much faster
+- Temporarily disable antivirus scanning (if authorized)
+- Run on system with good network connectivity
+
+#### Disk Space Warnings
+
+**Symptom**: "Low disk space" warning in logs
+
+**Solution**:
+1. Free up at least 500MB disk space
+2. Consider running on a different drive:
+   ```powershell
+   # Move script to D: drive (if available)
+   Copy-Item .\attackchain.ps1 D:\
+   cd D:\
+   .\attackchain.ps1
+   ```
+
+## 📊 Understanding Test Results
+
+### Exit Codes in CSV
+
+The `Atomic-Execution-Log.csv` contains an `ExitCode` column:
+- **0** = Success (test executed successfully)
+- **Non-zero** = Test encountered an error
+
+### Log Levels in Text Log
+
+The `Attack-Simulation-Log.txt` uses four log levels:
+- **[INFO]** = Informational message
+- **[SUCCESS]** = Action completed successfully
+- **[WARN]** = Warning - not necessarily an error
+- **[ERROR]** = Test or action failed
+
+### Success Criteria
+
+A successful script run means:
+✅ All prerequisites passed  
+✅ Module and atomics library loaded  
+✅ Script completed execution (even if some tests failed)  
+✅ Logs were generated  
+
+**Note**: Individual test failures do not mean script failure. Many tests are expected to be blocked by security controls.
 
 ## 📚 Additional Resources
 
 - [MITRE ATT&CK Framework](https://attack.mitre.org/)
 - [Atomic Red Team](https://github.com/redcanaryco/atomic-red-team)
-- [Invoke-AtomicRedTeam Documentation](https://github.com/redcanaryco/invoke-atomicredteam)
-- [Purple Team Exercise Framework](https://www.scythe.io/library/purple-teaming-framework)
+- [Invoke-AtomicRedTeam Documentation](https://github.com/redcanaryco/invoke-atomicredteam/wiki)
+- [Atomic Red Team Testing Guide](https://github.com/redcanaryco/atomic-red-team/wiki/Testing-Guidance)
 
 ## ⚖️ Legal Disclaimer
 
@@ -315,11 +540,7 @@ This script is provided for **EDUCATIONAL and AUTHORIZED SECURITY TESTING purpos
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👤 Authors
-
-- **Your Name** - Initial work
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 🙏 Acknowledgments
 
@@ -329,8 +550,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Remember**: Always test responsibly. With great power comes great responsibility. 🦸‍♂️
-
-**Questions or Issues?** Open an issue in this repository or contact the security team.
-
+**Version**: 1.8 - Hardened Edition (Fixed)  
 **Last Updated**: October 2025
+
+**Remember**: Always test responsibly in authorized lab environments only.
