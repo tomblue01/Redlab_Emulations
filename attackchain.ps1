@@ -1,5 +1,5 @@
 <#
-v1.8.1
+v1.8.1 
 .SYNOPSIS
     A modular script to emulate adversary tactics for EDR testing.
 
@@ -224,10 +224,10 @@ function Check-Prerequisites {
         Write-Log -Level WARN "Module 'Invoke-AtomicRedTeam' not found. Installing from GitHub..."
         
         try {
-            # Download and execute installation script, then immediately call Install-AtomicRedTeam
-            # CRITICAL: Must be in one line so Install-AtomicRedTeam function is available
+            # Use the exact Red Canary pattern from their documentation
             Write-Log "Downloading installation script from GitHub..."
-            IEX (IWR 'https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1' -UseBasicParsing); Install-AtomicRedTeam -GetAtomics -Force
+            Invoke-Expression (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1')
+            Install-AtomicRedTeam -GetAtomics -Force
             
             # Verify installation succeeded
             if (-NOT (Test-Path $modulePsdPath)) {
@@ -238,7 +238,8 @@ function Check-Prerequisites {
         } catch {
             $errorMsg = $_.Exception.Message
             Write-Log -Level ERROR "Failed to install from GitHub: $errorMsg"
-            Write-Log -Level ERROR "Please manually run: IEX (IWR 'https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1' -UseBasicParsing); Install-AtomicRedTeam -GetAtomics"
+            Write-Log -Level ERROR "Manual fix: Run this command in PowerShell:"
+            Write-Log -Level ERROR "  Invoke-Expression (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1'); Install-AtomicRedTeam -GetAtomics"
             throw "GitHub installation failed"
         }
     } else {
@@ -274,9 +275,10 @@ function Check-Prerequisites {
     if (-NOT (Test-Path "C:\AtomicRedTeam\atomics")) {
         Write-Log -Level WARN "Atomic Red Team test library not found. Downloading..."
         try {
-            # Use the separate install-atomicsfolder.ps1 script for just the atomics
+            # Use the exact Red Canary pattern from their source code
             Write-Log "Downloading atomics folder using Install-AtomicsFolder function..."
-            IEX (IWR 'https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicsfolder.ps1' -UseBasicParsing); Install-AtomicsFolder -Force
+            Invoke-Expression (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicsfolder.ps1')
+            Install-AtomicsFolder -Force
             
             # Verify download succeeded
             if (-NOT (Test-Path "C:\AtomicRedTeam\atomics")) {
@@ -287,7 +289,8 @@ function Check-Prerequisites {
         } catch {
             $errorMsg = $_.Exception.Message
             Write-Log -Level ERROR "Failed to download the Atomics library: $errorMsg"
-            Write-Log -Level ERROR "Please manually run: IEX (IWR 'https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicsfolder.ps1' -UseBasicParsing); Install-AtomicsFolder"
+            Write-Log -Level ERROR "Manual fix: Run this command in PowerShell:"
+            Write-Log -Level ERROR "  Invoke-Expression (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicsfolder.ps1'); Install-AtomicsFolder"
             throw "Atomics download failed"
         }
     } else {
