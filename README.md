@@ -31,7 +31,7 @@ A comprehensive PowerShell script for testing security systems using MITRE ATT&C
 
 ## 🎯 Overview
 
-This script (v1.8 - Hardened Edition) automates the execution of adversary tactics and techniques to test security system detection capabilities. It chains together multiple MITRE ATT&CK techniques across the attack lifecycle, from initial execution to impact, simulating realistic adversary behavior.
+This script (v1.8.2) automates the execution of adversary tactics and techniques to test security system detection capabilities. It chains together multiple MITRE ATT&CK techniques across the attack lifecycle, from initial execution to impact, simulating realistic adversary behavior.
 
 ### What This Script Does
 
@@ -74,6 +74,121 @@ The script executes a sequential chain of attack techniques organized by MITRE A
 
 **Note**: The script will automatically install the Invoke-AtomicRedTeam module from GitHub if not present.
 
+## 🛡️ Windows Defender Exclusions (REQUIRED)
+
+**⚠️ CRITICAL: You MUST configure Windows Defender exclusions BEFORE running the script.**
+
+### Why Exclusions Are Needed
+
+This script contains legitimate attack simulation code that Windows Defender and AMSI (Antimalware Scan Interface) will flag as malicious. This is expected behavior - the script executes real attack techniques for testing purposes.
+
+**Common Error Without Exclusions:**
+```
+This script contains malicious content and has been blocked by your antivirus software.
+CategoryInfo: ParserError: (:) [], ParseException
+FullyQualifiedErrorId: ScriptContainedMaliciousContent
+```
+
+### Windows 11 vs Windows 10 Differences
+
+**Windows 11:**
+- Tamper Protection is typically **enabled by default**
+- You may need to disable Tamper Protection before adding exclusions
+- Stricter default security settings
+
+**Windows 10:**
+- Tamper Protection often **not enabled by default** (varies by build)
+- Generally easier to configure exclusions
+- Less restrictive default configuration
+
+### Step 1: Check and Disable Tamper Protection (If Needed)
+
+**Check Tamper Protection Status:**
+```powershell
+Get-MpComputerStatus | Select-Object IsTamperProtected
+```
+
+**If Tamper Protection is Enabled:**
+1. Open **Windows Security**
+2. Go to **Virus & threat protection**
+3. Click **Manage settings**
+4. Scroll down and turn OFF **Tamper Protection**
+
+### Step 2: Add Required Exclusions
+
+**IMPORTANT:** Run these commands in PowerShell as Administrator **BEFORE** running the attack simulation script.
+
+#### Method 1: PowerShell Commands (Recommended)
+
+```powershell
+# Add folder exclusions for script and atomics locations
+Add-MpPreference -ExclusionPath "C:\shared"
+Add-MpPreference -ExclusionPath "C:\AtomicRedTeam"
+
+# Optional: Add PowerShell process exclusion for more comprehensive testing
+Add-MpPreference -ExclusionProcess "powershell.exe"
+
+# Verify exclusions were added successfully
+Get-MpPreference | Select-Object -ExpandProperty ExclusionPath
+Get-MpPreference | Select-Object -ExpandProperty ExclusionProcess
+```
+
+**Note:** Adjust the path `C:\shared` if your script is located elsewhere.
+
+#### Method 2: Windows Security GUI
+
+1. Open **Windows Security** (Windows + I → Privacy & Security → Windows Security)
+2. Go to **Virus & threat protection**
+3. Click **Manage settings** under "Virus & threat protection settings"
+4. Scroll down to **Exclusions**
+5. Click **Add or remove exclusions**
+6. Click **Add an exclusion** → **Folder**
+7. Add these folders:
+   - Your script directory (e.g., `C:\shared` or wherever you placed attackchain.ps1)
+   - `C:\AtomicRedTeam` (will be created during first run)
+
+### Step 3: Verify Configuration
+
+After adding exclusions, verify they're active:
+
+```powershell
+# Check Real-time Protection status
+Get-MpComputerStatus | Select-Object RealTimeProtectionEnabled, IsTamperProtected
+
+# Verify exclusions
+Get-MpPreference | Select-Object -ExpandProperty ExclusionPath
+```
+
+### Alternative: Temporarily Disable Real-time Protection
+
+**For Lab Testing Only:**
+```powershell
+# Disable real-time protection temporarily
+Set-MpPreference -DisableRealtimeMonitoring $true
+
+# Verify it's disabled
+Get-MpPreference | Select-Object DisableRealtimeMonitoring
+```
+
+**Warning:** Real-time protection may automatically re-enable after a reboot or timeout.
+
+### Troubleshooting Exclusions
+
+**Issue: Cannot add exclusions**
+- **Cause**: Tamper Protection is enabled
+- **Solution**: Disable Tamper Protection via Windows Security GUI first
+
+**Issue: Exclusions not working**
+- **Cause**: Exclusion paths are incorrect or AMSI is still blocking
+- **Solution**: 
+  1. Verify exact paths with `Get-MpPreference | Select-Object -ExpandProperty ExclusionPath`
+  2. Try adding PowerShell process exclusion
+  3. Temporarily disable real-time protection for testing
+
+**Issue: Changes revert after reboot**
+- **Cause**: Group Policy or enterprise management
+- **Solution**: Check with your system administrator about security policies
+
 ## 📋 Installation
 
 ### Quick Start
@@ -81,19 +196,36 @@ The script executes a sequential chain of attack techniques organized by MITRE A
 1. **Open PowerShell as Administrator**
    - Right-click PowerShell and select **"Run as Administrator"**
 
-2. **Set Execution Policy (if needed)**
+2. **Configure Windows Defender Exclusions (REQUIRED)**
+   ```powershell
+   # Add required exclusions BEFORE running the script
+   Add-MpPreference -ExclusionPath "C:\shared"
+   Add-MpPreference -ExclusionPath "C:\AtomicRedTeam"
+   
+   # Verify exclusions
+   Get-MpPreference | Select-Object -ExpandProperty ExclusionPath
+   ```
+   
+   See [Windows Defender Exclusions](#️-windows-defender-exclusions-required) section for detailed instructions.
+
+3. **Set Execution Policy (if needed)**
    ```powershell
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
    ```
 
-3. **Download the Script**
+4. **Download the Script**
    ```powershell
    # Option 1: Clone repository
-   git clone https://github.com/tomblue01/Redlab_Emulations.git
-   cd Redlab-Emulations
+   git clone https://github.com/yourusername/edr-attack-simulation.git
+   cd edr-attack-simulation
    
    # Option 2: Direct download
-   Invoke-WebRequest -Uri "https://raw.githubusercontent.com/tomblue01/Redlab_Emulations/main/attackchain.ps1" -OutFile "attackchain.ps1"
+   Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yourusername/edr-attack-simulation/main/attackchain.ps1" -OutFile "attackchain.ps1"
+   ```
+
+5. **Run the Script**
+   ```powershell
+   .\attackchain.ps1
    ```
 
 ## 🚀 Usage
@@ -272,6 +404,35 @@ Remove-Item C:\AtomicRedTeam -Recurse -Force
 ## 🛠️ Troubleshooting
 
 ### Prerequisites Issues
+
+#### Script Blocked by Windows Defender / AMSI
+
+**Symptom**: Error message "This script contains malicious content and has been blocked by your antivirus software"
+
+**Full Error:**
+```
+At C:\shared\attackchain.ps1:1 char:1
++ <#
++ ~~
+This script contains malicious content and has been blocked by your antivirus software.
+    + CategoryInfo          : ParserError: (:) [], ParseException
+    + FullyQualifiedErrorId : ScriptContainedMaliciousContent
+```
+
+**Cause**: Windows Defender or AMSI is blocking the script because it contains attack simulation code
+
+**Solution**: 
+1. **Add exclusions BEFORE running the script** (see [Windows Defender Exclusions](#️-windows-defender-exclusions-required))
+2. Verify exclusions were added:
+   ```powershell
+   Get-MpPreference | Select-Object -ExpandProperty ExclusionPath
+   ```
+3. If exclusions don't work, check Tamper Protection status:
+   ```powershell
+   Get-MpComputerStatus | Select-Object IsTamperProtected
+   ```
+4. Disable Tamper Protection if enabled (via Windows Security GUI)
+5. Re-add exclusions and try again
 
 #### Script Requires Administrator Rights
 
@@ -550,7 +711,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-**Version**: 1.8 - Hardened Edition (Fixed)  
+**Version**: 1.8.2 
 **Last Updated**: October 2025
 
 **Remember**: Always test responsibly in authorized lab environments only.
