@@ -103,7 +103,9 @@ FullyQualifiedErrorId: ScriptContainedMaliciousContent
 
 **Note**
 If Windows Defender Service is not running, you will NOT need exclusions. You can test by running the following: 
+
 ```Get-Service WinDefend | Select Status, StartType```
+
 If status is "Stopped", exclusions are not required (and the following commands will probably error out at any rate). 
 
 ### Step 1: Check and Disable Tamper Protection (If Needed)
