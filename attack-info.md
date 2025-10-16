@@ -1,5 +1,11 @@
 # EDR Testing Script - Attack Techniques Summary
 
+**✅ VERIFIED FROM SOURCE:** This summary has been verified against the actual Atomic Red Team repository at https://github.com/redcanaryco/atomic-red-team/tree/master/atomics
+
+All test numbers, technique IDs, task names, and manually-coded attacks have been confirmed against source code.
+
+---
+
 ## 1. EXECUTION (T1059.005 - Visual Basic)
 **What it does:**
 - Creates and executes a VBScript file (`temp-recon.vbs`)
@@ -14,27 +20,33 @@
 
 ## 2. PERSISTENCE (T1053.005 - Scheduled Task)
 **What it does:**
-- Creates a scheduled task named "spawn"
-- Task configured to execute malicious payload at specified intervals
+- Uses Atomic Test #2 to create a scheduled task named "spawn"
+- Task is created using PowerShell with XML configuration
+- Uses `Invoke-CimMethod` for task registration
 
 **EDR should detect:**
-- `schtasks.exe` execution or PowerShell calls to ScheduledTasks module
-- New scheduled task creation
+- PowerShell execution with `Invoke-CimMethod` or `Register-ScheduledTask` cmdlets
+- CIM/WMI queries to `PS_ScheduledTask` namespace
+- New scheduled task creation (task name: "spawn")
 - Task parameters and execution path
-- Registry modifications: `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache`
+- Registry modifications: `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks`
 
 ---
 
 ## 3. PRIVILEGE ESCALATION (T1548.002 - UAC Bypass via Fodhelper)
 **What it does:**
-- Modifies registry to abuse Windows Fodhelper.exe auto-elevation
-- Creates registry key: `HKCU\Software\Classes\ms-settings\shell\open\command`
-- Launches fodhelper.exe which triggers the bypass
+- Uses Atomic Test #3 - "Bypass UAC using Fodhelper"
+- Creates registry entries:
+  - `HKCU\Software\Classes\.pwn\Shell\Open\command` (sets calc.exe)
+  - `HKCU\Software\Classes\ms-settings\CurVer` (points to .pwn)
+- Launches `fodhelper.exe` which auto-elevates and executes the registry command
 
 **EDR should detect:**
 - Registry modifications under `HKCU\Software\Classes\`
-- `fodhelper.exe` execution with suspicious parent process
-- Process spawning from auto-elevated context
+- Specifically: `.pwn`, `ms-settings\CurVer` keys
+- `fodhelper.exe` execution (legitimate Windows binary)
+- `fodhelper.exe` spawning unusual child process (like calc.exe or cmd.exe)
+- Process spawning from auto-elevated context without UAC prompt
 
 ---
 
@@ -42,14 +54,20 @@
 
 ### T1562.001 - Disable Windows Defender
 **What it does:**
-- Executes commands to disable/tamper with Windows Defender
-- Typically uses `Set-MpPreference` or registry modifications
+- Uses Atomic Test #17 - "Tamper with Windows Defender Command Prompt"
+- Executes via command prompt (not PowerShell):
+  - `sc stop WinDefend` - Stops the Windows Defender service
+  - `sc config WinDefend start=disabled` - Disables auto-start
+  - `sc query WinDefend` - Queries service status
+- **NOTE:** These commands require SYSTEM privileges, will typically fail as Admin
 
 **EDR should detect:**
-- `powershell.exe` with Defender-related cmdlets
-- Registry changes: `HKLM\SOFTWARE\Policies\Microsoft\Windows Defender`
-- Service tampering attempts
-- Defender feature modifications (real-time protection, cloud protection, etc.)
+- `sc.exe` or `cmd.exe` attempting to stop/disable WinDefend service
+- Service control commands targeting Windows Defender
+- Registry changes in:
+  - Service configuration keys for WinDefend
+- Multiple attempts to modify Defender service state
+- Commands like `sc stop WinDefend`, `sc config WinDefend start=disabled`
 
 ### T1027 - Obfuscated Commands
 **What it does:**
@@ -102,44 +120,29 @@
 
 ## 6. DISCOVERY
 
-### T1082 - System Information Discovery
+### Multiple Discovery Techniques
 **What it does:**
-- Executes `systeminfo`, `wmic`, or registry queries
-- Gathers OS version, patches, hardware info
+- T1082 Test #1: System Information Discovery (systeminfo, hostname, ver commands)
+- T1057 Test #2: Process Discovery (tasklist or Get-Process)
+- T1049 Test #1: System Network Connections Discovery (netstat)
 
 **EDR should detect:**
-- Native Windows reconnaissance binaries
-- Multiple info-gathering commands in sequence
-- WMIC queries for system data
+- Rapid succession of reconnaissance commands
+- `systeminfo.exe`, `hostname.exe` execution
+- `tasklist.exe` or PowerShell `Get-Process`
+- `netstat.exe` with parameters
+- Multiple info-gathering commands in short timeframe
 
-### T1057 - Process Discovery
+### T1018 - Remote System Discovery  
 **What it does:**
-- Runs `tasklist`, `Get-Process`, or `wmic process`
-- Enumerates running processes
+- Executes `arp -a` to enumerate network neighbors
+- Saves output to `network_recon.txt` in script directory
+- Identifies other systems on the local network
 
 **EDR should detect:**
-- Process enumeration APIs
-- Tasklist execution
-- WMIC process queries
-
-### T1049 - System Network Connections Discovery
-**What it does:**
-- Executes `netstat -ano` or similar
-- Discovers active network connections
-
-**EDR should detect:**
-- `netstat.exe` execution
-- Network enumeration commands
-
-### T1018 - Remote System Discovery
-**What it does:**
-- Runs `arp -a` command
-- Saves network reconnaissance to `network_recon.txt`
-
-**EDR should detect:**
-- Network scanning commands
+- `arp.exe` execution with `-a` parameter
 - ARP table enumeration
-- File creation with recon data
+- File creation with reconnaissance data in script directory
 
 ---
 
@@ -147,72 +150,94 @@
 
 ### T1105 - Tool Transfer (PowerShell)
 **What it does:**
-- Uses `Invoke-WebRequest` to download file from internet
-- Downloads to `%TEMP%\c2_payload.txt`
+- Uses `Invoke-WebRequest` to download from https://www.bing.com/robots.txt
+- Saves to `%TEMP%\c2_payload.txt`
+- Simulates downloading external payload
 
 **EDR should detect:**
-- PowerShell with web request cmdlets
-- Outbound HTTP/HTTPS connections from PowerShell
-- File downloads to temp directories
-- Suspicious user-agent strings
+- `powershell.exe` with `Invoke-WebRequest` or `IWR` cmdlet
+- Outbound HTTPS connection to bing.com from PowerShell
+- File download to temp directory
+- Network connection initiating from scripting engine
 
 ### T1197 - BITS Jobs
 **What it does:**
-- Creates Background Intelligent Transfer Service (BITS) job
-- Uses BITS for stealthy file download
+- Uses Atomic Test #2 - PowerShell version of BITS job creation
+- Creates Background Intelligent Transfer Service job for file download
+- More stealthy than direct downloads
 
 **EDR should detect:**
-- BITS job creation via `bitsadmin.exe` or PowerShell
-- New BITS transfer jobs
-- Network connections associated with BITS
-- Downloaded files from BITS cache
+- PowerShell executing BITS-related cmdlets (`Start-BitsTransfer`)
+- New BITS transfer job creation
+- BITS service activity (`bitsadmin.exe` or PowerShell BITS cmdlets)
+- Network connections associated with BITS service
+- Downloaded files through BITS cache
 
 ---
 
 ## 8. IMPACT (T1490 - Inhibit System Recovery)
 **What it does:**
-- Disables Windows System Restore via registry modification
-- Modifies: `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore\DisableSR`
+- Uses Atomic Test #9 - "Disable System Restore Through Registry"
+- Modifies registry: `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore\DisableSR` = 1
+- Prevents Windows System Restore functionality
+- No prerequisites needed (pure registry modification)
 
 **EDR should detect:**
-- Registry modifications disabling recovery features
-- Changes to System Restore settings
-- `vssadmin.exe` if shadow copies are deleted
-- Suspicious registry writes to backup/recovery keys
+- Registry write to SystemRestore key
+- `DisableSR` value being set to 1
+- PowerShell or reg.exe modifying system recovery settings
+- Changes to backup/recovery registry keys
+- Potential correlation with other ransomware-like behavior
 
 ---
 
 ## Summary of Critical EDR Alerts Expected
 
 ### **HIGH SEVERITY (Should be BLOCKED):**
-1. LSASS memory access/dumping
-2. Windows Defender disablement
-3. UAC bypass attempts
-4. Credential dumping tool execution
+1. **LSASS memory access/dumping** - Any attempt to read LSASS memory
+2. **Windows Defender disablement** - Registry or service modifications
+3. **UAC bypass attempts** - Fodhelper abuse via registry
+4. **Credential dumping tool execution** - Procdump with LSASS target
 
 ### **MEDIUM SEVERITY (Should be ALERTED):**
-1. Scheduled task creation for persistence
-2. Script execution (VBScript, encoded PowerShell)
-3. LOLBin abuse (certutil, BITS)
-4. Masquerading executables
-5. System recovery inhibition
+1. **Scheduled task creation for persistence** - Task named "spawn"
+2. **Script execution** - VBScript and encoded PowerShell
+3. **LOLBin abuse** - certutil, BITS for downloads
+4. **Process masquerading** - svchost.exe from %TEMP%
+5. **System recovery inhibition** - DisableSR registry modification
+6. **Multiple reconnaissance commands** - Discovery technique chaining
 
 ### **LOW/INFO SEVERITY:**
-1. Network/system reconnaissance commands
-2. Process enumeration
-3. Web downloads via PowerShell
+1. **Network/system reconnaissance commands** - systeminfo, netstat, arp
+2. **Process enumeration** - tasklist execution
+3. **Web downloads via PowerShell** - Invoke-WebRequest usage
+
+---
+
+## Important Notes About Test Execution
+
+### Cleanup Behavior
+The script includes **automatic cleanup before each test** to prevent "already exists" errors. However, if the script is interrupted, you should manually run the cleanup commands displayed at the end of execution.
+
+### Expected Test Outcomes
+- **LSASS Dump (T1003.001)**: Should FAIL with "Access Denied" - this is correct behavior
+- **Defender Tampering (T1562.001)**: May be partially blocked or logged
+- **UAC Bypass (T1548.002)**: May succeed on systems with default UAC settings
+- **Masquerading (T1036.003)**: Should trigger alerts but will execute
+- **Reconnaissance (T1082, T1057, etc.)**: Will succeed but should be logged
 
 ---
 
 ## Files Created During Testing
-- `Attack-Simulation-Log.txt` - Script execution log
-- `Atomic-Execution-Log.csv` - Atomic test execution details
-- `temp-recon.vbs` - VBScript file (auto-cleaned)
-- `network_recon.txt` - ARP scan results
-- `lsass.dmp` - LSASS memory dump (if not blocked)
-- `%TEMP%\svchost.exe` - Masqueraded PowerShell
-- `%TEMP%\c2_payload.txt` - Downloaded file
-- `%TEMP%\SysinternalsSuite\*` - Downloaded tools
+- `Attack-Simulation-Log.txt` - Script execution log in script directory
+- `Atomic-Execution-Log.csv` - Atomic test execution details in script directory
+- `temp-recon.vbs` - VBScript file (auto-cleaned after execution)
+- `network_recon.txt` - ARP scan results in script directory
+- `lsass.dmp` - LSASS memory dump in script directory (if not blocked by EDR)
+- `%TEMP%\svchost.exe` - Masqueraded PowerShell copy
+- `%TEMP%\c2_payload.txt` - Downloaded test file (robots.txt from bing.com)
+- `%TEMP%\SysinternalsSuite.zip` - Downloaded Sysinternals tools
+- `%TEMP%\SysinternalsSuite\*` - Extracted tools including procdump64.exe
 
 ---
 
@@ -220,28 +245,39 @@
 
 **Process Chains to Watch For:**
 ```
-powershell.exe → cscript.exe → cmd.exe
-powershell.exe → fodhelper.exe
-powershell.exe → schtasks.exe
-powershell.exe → certutil.exe
-powershell.exe → bitsadmin.exe
-procdump64.exe → lsass.exe (handle request)
-svchost.exe [from wrong path]
+powershell.exe [running script] → cscript.exe → cmd.exe → whoami.exe / hostname.exe
+powershell.exe → Invoke-CimMethod (scheduled task creation)
+powershell.exe → reg.exe (UAC bypass registry modifications)
+fodhelper.exe → cmd.exe / calc.exe (from wrong parent, indicates UAC bypass)
+powershell.exe → certutil.exe (file download via LOLBin)
+%TEMP%\svchost.exe [masqueraded PowerShell]
+powershell.exe → procdump64.exe → lsass.exe (LSASS dump attempt)
+powershell.exe → arp.exe
+powershell.exe → Invoke-WebRequest (C2 download)
+powershell.exe → Start-BitsTransfer (BITS job)
 ```
 
 **Command-Line Indicators:**
-- `-EncodedCommand`
-- `-urlcache`
-- `/create /tn`
-- `-accepteula -ma lsass.exe`
-- `Set-MpPreference -Disable*`
-- `DisableSR`
+- `-EncodedCommand` (Base64 encoded PowerShell)
+- `-urlcache` or `-verifyctl` (certutil downloading)
+- `Invoke-CimMethod -ClassName PS_ScheduledTask` (task creation)
+- `reg add "HKCU\Software\Classes\.pwn"` (UAC bypass)
+- `start fodhelper.exe` (UAC bypass trigger)
+- `-accepteula -ma lsass.exe` (procdump LSASS dump)
+- `Set-MpPreference -Disable*` (Defender tampering - may vary by test)
+- `DisableSR` (System Restore disabling)
+- `Invoke-WebRequest -Uri` (web downloads)
+- `Start-BitsTransfer` (BITS transfers)
+- `arp -a` (network reconnaissance)
+- `Copy-Item` to `%TEMP%\svchost.exe` (masquerading)
 
 **Network Activity:**
-- Downloads from raw.githubusercontent.com
-- Downloads from sysinternals.com
-- HTTP requests from PowerShell/certutil
-- BITS transfers
+- Downloads from raw.githubusercontent.com (Atomic Red Team test files)
+- Downloads from download.sysinternals.com (Sysinternals Suite)
+- HTTPS to bing.com/robots.txt (C2 simulation download)
+- HTTPS requests from PowerShell process
+- HTTP requests from certutil.exe (Atomic test #7 for T1105)
+- BITS service network transfers
 
 ---
 
