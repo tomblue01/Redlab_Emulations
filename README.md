@@ -154,10 +154,10 @@ Get-MpPreference | Select-Object -ExpandProperty ExclusionPath
    ```powershell
    # Option 1: Clone repository
    git clone https://github.com/tomblue01/Redlab_Emulations.git
-   cd edr-attack-simulation
+   cd Redlab_Emulations
    
    # Option 2: Direct download
-   Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yourusername/edr-attack-simulation/main/attackchain.ps1" -OutFile "attackchain.ps1"
+   Invoke-WebRequest -Uri "https://raw.githubusercontent.com/tomblue01/Redlab_Emulations/main/attackchain.ps1" -OutFile "attackchain.ps1"
    ```
 
 4. **Run the Script**
