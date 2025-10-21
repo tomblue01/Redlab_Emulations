@@ -74,7 +74,7 @@ The script executes a sequential chain of attack techniques organized by MITRE A
 
 **Note**: The script will automatically install the Invoke-AtomicRedTeam module from GitHub if not present.
 
-## 🛡️ Windows Defender Exclusions (REQUIRED)
+## 🛡️ Windows Defender Exclusions
 
 **⚠️ CRITICAL: You MUST configure Windows Defender exclusions BEFORE running the script.**
 
