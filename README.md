@@ -153,7 +153,7 @@ Get-MpPreference | Select-Object -ExpandProperty ExclusionPath
 3. **Download the Script**
    ```powershell
    # Option 1: Clone repository
-   git clone https://github.com/yourusername/edr-attack-simulation.git
+   git clone https://github.com/tomblue01/Redlab_Emulations.git
    cd edr-attack-simulation
    
    # Option 2: Direct download
