@@ -104,22 +104,10 @@ function Check-Prerequisites {
     }
     Write-Log "Administrator privileges confirmed" -Level SUCCESS
     
-    # Install NuGet provider first (without prompting)
-    Write-Log "Checking NuGet provider..." -Level INFO -NoConsole
-    $nuget = Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue
-    if (-not $nuget -or ($nuget.Version -lt '2.8.5.201')) {
-        Write-Log "Installing NuGet provider..." -Level WARN
-        Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope AllUsers | Out-Null
-        Write-Log "NuGet provider installed" -Level SUCCESS -NoConsole
-    }
-    
-    # Set PSGallery as trusted to avoid prompts
-    Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
-    
     # Check/Install Invoke-AtomicRedTeam
     if (-NOT (Get-Module -ListAvailable -Name Invoke-AtomicRedTeam)) {
         Write-Log "Installing Invoke-AtomicRedTeam module..." -Level WARN
-        Install-Module -Name Invoke-AtomicRedTeam -Scope AllUsers -Force -AllowClobber -SkipPublisherCheck
+        Install-Module -Name Invoke-AtomicRedTeam -Scope AllUsers -Force -AllowClobber
         if (-NOT (Get-Module -ListAvailable -Name Invoke-AtomicRedTeam)) {
             Write-Log "Failed to install Invoke-AtomicRedTeam module" -Level ERROR
             throw "Module installation failed"
@@ -128,71 +116,24 @@ function Check-Prerequisites {
     } else {
         Write-Log "Invoke-AtomicRedTeam module already installed" -Level INFO -NoConsole
     }
-    
-    # Force import and verify commands are available
-    Remove-Module Invoke-AtomicRedTeam -Force -ErrorAction SilentlyContinue
-    Import-Module Invoke-AtomicRedTeam -Force
-    
-    # Verify the Install-AtomicRedTeam command is available
-    if (-not (Get-Command Install-AtomicRedTeam -ErrorAction SilentlyContinue)) {
-        Write-Log "Invoke-AtomicRedTeam module loaded but commands not available. Retrying import..." -Level WARN
-        Start-Sleep -Seconds 2
-        Import-Module Invoke-AtomicRedTeam -Force -Global
-        
-        if (-not (Get-Command Install-AtomicRedTeam -ErrorAction SilentlyContinue)) {
-            Write-Log "Module commands still not available. Manual intervention needed." -Level ERROR
-            throw "Invoke-AtomicRedTeam commands not available after import"
-        }
-    }
-    Write-Log "Invoke-AtomicRedTeam commands verified" -Level INFO -NoConsole
+    Import-Module Invoke-AtomicRedTeam
     
     # Check/Download Atomics
     if (-NOT (Test-Path "C:\AtomicRedTeam\atomics")) {
         Write-Log "Downloading Atomic Red Team library..." -Level WARN
         try {
             Install-AtomicRedTeam -GetAtomics -Force
-            Write-Log "Atomics library downloaded" -Level SUCCESS
         } catch {
-            Write-Log "Primary download failed: $($_.Exception.Message)" -Level WARN
-            Write-Log "Trying alternative download method..." -Level WARN
+            Write-Log "Download failed, trying alternative method..." -Level WARN
             try {
-                # Alternative method - download and extract manually
-                $atomicsUrl = "https://github.com/redcanaryco/atomic-red-team/archive/master.zip"
-                $downloadPath = Join-Path $env:TEMP "atomic-red-team.zip"
-                $extractPath = "C:\AtomicRedTeam"
-                
-                Write-Log "Downloading from GitHub..." -Level INFO -NoConsole
-                Invoke-WebRequest -Uri $atomicsUrl -OutFile $downloadPath -UseBasicParsing
-                
-                Write-Log "Extracting atomics..." -Level INFO -NoConsole
-                if (Test-Path $extractPath) {
-                    Remove-Item $extractPath -Recurse -Force -ErrorAction SilentlyContinue
-                }
-                New-Item -Path $extractPath -ItemType Directory -Force | Out-Null
-                
-                Expand-Archive -Path $downloadPath -DestinationPath $extractPath -Force
-                
-                # Move atomics folder to correct location
-                $extractedFolder = Join-Path $extractPath "atomic-red-team-master"
-                if (Test-Path $extractedFolder) {
-                    Copy-Item -Path (Join-Path $extractedFolder "atomics") -Destination $extractPath -Recurse -Force
-                    Remove-Item $extractedFolder -Recurse -Force -ErrorAction SilentlyContinue
-                }
-                
-                # Cleanup
-                Remove-Item $downloadPath -Force -ErrorAction SilentlyContinue
-                
-                if (Test-Path "C:\AtomicRedTeam\atomics") {
-                    Write-Log "Atomics library downloaded via alternative method" -Level SUCCESS
-                } else {
-                    throw "Atomics folder not found after extraction"
-                }
+                IEX (IWR 'https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1' -UseBasicParsing)
+                Install-AtomicRedTeam -GetAtomics -Force
             } catch {
-                Write-Log "Alternative download failed: $($_.Exception.Message)" -Level ERROR
-                Write-Log "Please manually install Atomic Red Team from: https://github.com/redcanaryco/atomic-red-team" -Level ERROR
+                Write-Log "Failed to download Atomics library: $($_.Exception.Message)" -Level ERROR
                 throw "Atomics download failed"
             }
         }
+        Write-Log "Atomics library downloaded" -Level SUCCESS
     } else {
         Write-Log "Atomics library present" -Level INFO -NoConsole
     }
